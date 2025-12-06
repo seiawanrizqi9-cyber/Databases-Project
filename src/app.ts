@@ -7,9 +7,10 @@ import express, {
 import morgan from "morgan";
 import helmet from "helmet";
 import cors from "cors";
-import { errorHandler } from "./middleware/error.handler";
+import { errorHandler } from "./middleware/error.handler.js";
 import { successResponse } from "./utils/response.js";
 import bookRouter from "./routes/book.route.js";
+import magicRouter from "./routes/magic.route.js";
 
 const app: Application = express();
 
@@ -78,12 +79,50 @@ app.get("/", (req: Request, res: Response) => {
           description: "Menghapus buku",
         },
       ],
+      auth: [
+        {
+          path: "/api/auth/request",
+          method: "POST",
+          description: "Request magic link login",
+        },
+        {
+          path: "/api/auth/verify",
+          method: "POST",
+          description: "Verify magic token",
+        },
+        {
+          path: "/api/auth/validate",
+          method: "GET",
+          description: "Validate session",
+        },
+        {
+          path: "/api/auth/users",
+          method: "GET",
+          description: "Get all users (admin)",
+        },
+        {
+          path: "/api/auth/profile/:email",
+          method: "GET",
+          description: "Get user profile",
+        },
+        {
+          path: "/api/auth/profile/:email",
+          method: "PUT",
+          description: "Update user profile",
+        },
+        {
+          path: "/api/auth/logout",
+          method: "POST",
+          description: "Logout (optional)",
+        },
+      ],
     },
   });
 });
 
 // Routes
 app.use("/api/books", bookRouter);
+app.use("/api/auth", magicRouter);
 
 // 404 handler
 app.use(/.*/, (req: Request, res: Response) => {
