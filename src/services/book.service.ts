@@ -1,118 +1,133 @@
-import { books } from "../models/book.model";
-import type { Book } from "../types/book.type";
+import { getPrisma } from "../prisma";
 
-export const getAllBooks = () => {
-  return { books: books, total: books.length };
+const prisma = getPrisma();
+
+// GET ALL dengan pagination
+export const getAllBooks = async (page?: number, limit?: number) => {
+  const pageNum = page || 1;
+  const limitNum = limit || 10;
+  const skip = (pageNum - 1) * limitNum;
+
+  const [books, total] = await Promise.all([
+    prisma.book.findMany({
+      where: { deletedAt: null },
+      include: { author: true },
+      skip,
+      take: limitNum,
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.book.count({ where: { deletedAt: null } }),
+  ]);
+
+  return { books, total, page: pageNum, totalPages: Math.ceil(total / limitNum) };
 };
 
-export const getBookById = (id: string) => {
-  const numId = parseInt(id);
-  const book = books.find((book) => book.id === numId);
+// GET BY ID
+export const getBookById = async (id: string) => {
+  const book = await prisma.book.findUnique({
+    where: { id, deletedAt: null },
+    include: { author: true, loans: { include: { member: true } } },
+  });
 
-  if (!book) {
-    throw new Error("Book not found");
-  }
-
-  return { book };
+  if (!book) throw new Error("Buku tidak ditemukan");
+  return book;
 };
 
-export const searchBooks = (
+// SEARCH - SEDERHANA seperti project kemarin
+export const searchBooks = async (
   title?: string,
-  author?: string,
+  authorName?: string,
   genre?: string,
-  min_price?: string,
-  max_price?: string,
-  min_year?: string,
-  max_year?: string
-): { books: Book[]; total: number; filters: Record<string, any> } => {
-  let result = books;
+  minPrice?: number,
+  maxPrice?: number,
+  minYear?: number,
+  maxYear?: number,
+  page?: number,
+  limit?: number
+) => {
+  const pageNum = page || 1;
+  const limitNum = limit || 10;
+  const skip = (pageNum - 1) * limitNum;
 
-  if (title) {
-    result = result.filter((b) =>
-      b.title.toLowerCase().includes(title.toLowerCase())
-    );
+  const where: any = { deletedAt: null };
+
+  if (title) where.title = { contains: title, mode: "insensitive" };
+  if (genre) where.genre = { contains: genre, mode: "insensitive" };
+  if (minPrice !== undefined) where.price = { gte: minPrice };
+  if (maxPrice !== undefined) where.price = { lte: maxPrice };
+  if (minYear !== undefined) where.year = { gte: minYear };
+  if (maxYear !== undefined) where.year = { lte: maxYear };
+
+  if (authorName) {
+    where.author = {
+      name: { contains: authorName, mode: "insensitive" },
+      deletedAt: null,
+    };
   }
 
-  if (author) {
-    result = result.filter((b) =>
-      b.author.toLowerCase().includes(author.toLowerCase())
-    );
-  }
-
-  if (genre) {
-    result = result.filter((b) =>
-      b.genre.toLowerCase().includes(genre.toLowerCase())
-    );
-  }
-
-  if (min_price) {
-    result = result.filter((b) => b.price >= Number(min_price));
-  }
-
-  if (max_price) {
-    result = result.filter((b) => b.price <= Number(max_price));
-  }
-
-  if (min_year) {
-    result = result.filter((b) => b.year >= Number(min_year));
-  }
-
-  if (max_year) {
-    result = result.filter((b) => b.year <= Number(max_year));
-  }
+  const [books, total] = await Promise.all([
+    prisma.book.findMany({
+      where,
+      include: { author: true },
+      skip,
+      take: limitNum,
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.book.count({ where }),
+  ]);
 
   return {
-    books: result,
-    total: result.length,
-    filters: { title, author, genre, min_price, max_price, min_year, max_year },
+    books,
+    total,
+    page: pageNum,
+    totalPages: Math.ceil(total / limitNum),
   };
 };
 
-export const createBook = (
+// CREATE
+export const createBook = async (
   title: string,
-  author: string,
-  description: string,
-  year: number,
-  genre: string,
-  price: number,
-  stock: number
+  authorId: string,
+  description?: string,
+  year?: number,
+  genre?: string,
+  price?: number,
+  stock?: number
 ) => {
-  const newBook: Book = {
-    id: books.length + 1,
-    title,
-    author,
-    description,
-    year,
-    genre,
-    price,
-    stock,
-  };
+  // Validasi author
+  const author = await prisma.author.findUnique({
+    where: { id: authorId, deletedAt: null },
+  });
+  if (!author) throw new Error("Author tidak ditemukan");
 
-  books.push(newBook);
-  return books;
+  return await prisma.book.create({
+    data: {
+      title,
+      description: description || null,
+      year: year || new Date().getFullYear(),
+      genre: genre || "Unknown",
+      price: price || 0,
+      stock: stock || 0,
+      authorId,
+    },
+    include: { author: true },
+  });
 };
 
-export const updateBook = (id: string, data: any) => {
-  const numId = parseInt(id);
-  const index = books.findIndex((book) => book.id === numId);
-
-  if (index === -1) {
-    throw new Error("Book not found");
-  }
-
-  books[index] = { ...books[index], ...data };
-  return books[index];
+// UPDATE
+export const updateBook = async (id: string, data: any) => {
+  await getBookById(id); // Validasi exist
+  return await prisma.book.update({
+    where: { id, deletedAt: null },
+    data,
+    include: { author: true },
+  });
 };
 
-export const deleteBook = (id: string) => {
-  const numId = parseInt(id);
-  const index = books.findIndex((book) => book.id === numId);
-
-  if (index === -1) {
-    throw new Error("Book not found");
-  }
-
-  const deleted = books.splice(index, 1);
-
-  return deleted;
+// DELETE (soft)
+export const deleteBook = async (id: string) => {
+  return await prisma.book.update({
+    where: { id, deletedAt: null },
+    data: { deletedAt: new Date() },
+  });
 };

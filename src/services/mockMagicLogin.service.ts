@@ -205,7 +205,7 @@ export class MockMagicLoginService {
   }
 
   // 7. Logout (Optional - Invalidate token on server side if needed)
-  async logout(authToken: string): Promise<boolean> {
+  async logout (token: string): Promise<boolean> {
     return true;
   }
 }

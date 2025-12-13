@@ -9,124 +9,102 @@ import {
   deleteBook,
 } from "../services/book.service";
 
-export const getAll = (_req: Request, res: Response) => {
+export const getAll = async (req: Request, res: Response) => {
   try {
-    const { books, total } = getAllBooks();
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
 
-    successResponse(
-      res,
-      "Daftar buku berhasil diambil",
-      {
-        books: books,
-        total: total
-      }
-    );
+    const result = await getAllBooks(page, limit);
+
+    successResponse(res, "Daftar buku berhasil diambil", {
+      books: result.books,
+      pagination: {
+        page: result.page,
+        limit,
+        total: result.total,
+        totalPages: result.totalPages,
+      },
+    });
   } catch (error: any) {
     errorResponse(res, error.message || "Gagal mengambil daftar buku", 500);
   }
 };
 
-export const getById = (req: Request, res: Response) => {
+export const getById = async (req: Request, res: Response) => {
   try {
-    if (!req.params.id) {
-      return errorResponse(res, "ID buku diperlukan", 400);
-    }
-
-    const book = getBookById(req.params.id);
-
-    successResponse(
-      res,
-      "Buku berhasil ditemukan",
-      book
-    );
+    const book = await getBookById(req.params.id!);
+    successResponse(res, "Buku berhasil ditemukan", book);
   } catch (error: any) {
     errorResponse(res, error.message, 404);
   }
 };
 
-export const search = (req: Request, res: Response) => {
+export const search = async (req: Request, res: Response) => {
   try {
-    const { title, author, genre, min_price, max_price, min_year, max_year } = req.query;
+    const {
+      title,
+      author,
+      genre,
+      min_price,
+      max_price,
+      min_year,
+      max_year,
+      page,
+      limit,
+    } = req.query;
 
-    const result = searchBooks(
+    // SAMA PERSIS dengan product controller kemarin
+    const result = await searchBooks(
       title?.toString(),
       author?.toString(),
       genre?.toString(),
-      min_price?.toString(),
-      max_price?.toString(),
-      min_year?.toString(),
-      max_year?.toString()
+      min_price ? Number(min_price) : undefined,
+      max_price ? Number(max_price) : undefined,
+      min_year ? Number(min_year) : undefined,
+      max_year ? Number(max_year) : undefined,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined
     );
 
-    successResponse(
-      res,
-      "Pencarian buku berhasil",
-      {
-        books: result.books,
-        total: result.total,
-        filters: result.filters
-      }
-    );
+    successResponse(res, "Pencarian buku berhasil", result);
   } catch (error: any) {
     errorResponse(res, error.message || "Gagal mencari buku", 500);
   }
 };
 
-export const create = (req: Request, res: Response) => {
+export const create = async (req: Request, res: Response) => {
   try {
-    const { 
-      title, 
-      author, 
-      description, 
-      year,
-      genre, 
-      price, 
-      stock 
-    } = req.body;
+    const { title, authorId, description, year, genre, price, stock } = req.body;
 
-    const newBook = createBook(
-      title, 
-      author, 
-      description, 
-      year,
-      genre, 
-      price, 
-      stock
+    const newBook = await createBook(
+      title,
+      authorId,
+      description,
+      year ? Number(year) : undefined,
+      genre,
+      price ? Number(price) : undefined,
+      stock ? Number(stock) : undefined
     );
 
-    successResponse(
-      res,
-      "Buku berhasil ditambahkan",
-      newBook,
-    );
+    successResponse(res, "Buku berhasil ditambahkan", newBook, 201);
   } catch (error: any) {
     errorResponse(res, error.message || "Gagal menambahkan buku", 400);
   }
 };
 
-export const update = (req: Request, res: Response) => {
+export const update = async (req: Request, res: Response) => {
   try {
-    const book = updateBook(req.params.id!, req.body);
-
-    successResponse(
-      res,
-      "Buku berhasil diperbarui",
-      book
-    );
+    const book = await updateBook(req.params.id!, req.body);
+    successResponse(res, "Buku berhasil diperbarui", book);
   } catch (error: any) {
     errorResponse(res, error.message, 404);
   }
 };
 
-export const remove = (req: Request, res: Response) => {
+export const remove = async (req: Request, res: Response) => {
   try {
-    const deletedBook = deleteBook(req.params.id!);
-
-    successResponse(
-      res,
-      "Buku berhasil dihapus",
-      deletedBook
-    );
+    const deletedBook = await deleteBook(req.params.id!);
+    successResponse(res, "Buku berhasil dihapus", deletedBook);
   } catch (error: any) {
     errorResponse(res, error.message, 404);
   }

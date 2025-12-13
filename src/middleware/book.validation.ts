@@ -34,19 +34,28 @@ export const createBookValidation = [
     .isLength({ min: 2 })
     .withMessage("Judul minimal 2 karakter"),
 
-  body("author").trim().notEmpty().withMessage("Penulis wajib diisi"),
+  body("authorId")
+    .trim()
+    .notEmpty()
+    .withMessage("Author ID wajib diisi")
+    .isUUID()
+    .withMessage("Author ID harus format UUID"),
 
-  body("description").trim().notEmpty().withMessage("Deskripsi wajib diisi"),
+  body("description").optional().trim(),
+
+  body("year")
+    .isInt({ min: 1000, max: new Date().getFullYear() })
+    .withMessage(`Tahun terbit harus antara 1000-${new Date().getFullYear()}`),
 
   body("genre").trim().notEmpty().withMessage("Genre wajib diisi"),
 
   body("price")
-    .isNumeric()
-    .withMessage("Harga harus angka")
+    .isFloat({ min: 0 })
+    .withMessage("Harga tidak boleh negatif")
     .custom((value) => value > 0)
-    .withMessage("harga harus lebih dari 0"),
+    .withMessage("Harga harus lebih dari 0"),
 
-  body("stock").isInt({ min: 0 }).withMessage("Stok minimal 0"),
+  body("stock").isInt({ min: 0 }).withMessage("Stok tidak boleh negatif"),
 ];
 
 export const updateBookValidation = [
@@ -61,6 +70,11 @@ export const updateBookValidation = [
     .trim()
     .isLength({ min: 2 })
     .withMessage("Penulis minimal 2 karakter"),
+
+  body("authorId")
+    .optional()
+    .isUUID()
+    .withMessage("Author ID harus format UUID"),
 
   body("description")
     .optional()
