@@ -1,86 +1,134 @@
 import type { Request, Response } from "express";
-import { successResponse, errorResponse } from "../utils/response";
-import {
-  getAllMembers,
-  getMemberById,
-  searchMembers,
-  createMember,
-  updateMember,
-  deleteMember,
-} from "../services/member.service";
+import { successResponse } from "../utils/response";
+import type { IMemberService } from "../services/member.service";
 
-export const getAll = async (req: Request, res: Response) => {
-  try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+export interface IMemberController {
+  list: (req: Request, res: Response) => Promise<void>;
+  getById: (req: Request, res: Response) => Promise<void>;
+  create: (req: Request, res: Response) => Promise<void>;
+  update: (req: Request, res: Response) => Promise<void>;
+  delete: (req: Request, res: Response) => Promise<void>;
+  
+  // HANYA TAMBAH 1 METHOD INI (SAMA DENGAN PRODUCT):
+  getStats: (req: Request, res: Response) => Promise<void>;
+}
 
-    const result = await getAllMembers(page, limit);
+export class MemberController implements IMemberController {
+  constructor(private memberService: IMemberService) {
+    // SESUAI PRODUCT: Bind di constructor controller
+    this.list = this.list.bind(this);
+    this.getById = this.getById.bind(this);
+    this.create = this.create.bind(this);
+    this.update = this.update.bind(this);
+    this.delete = this.delete.bind(this);
+    this.getStats = this.getStats.bind(this);
+  }
 
-    successResponse(res, "Daftar member berhasil diambil", {
-      members: result.members,
-      pagination: {
-        page: result.page,
+  async list(req: Request, res: Response): Promise<void> {
+    try {
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;
+      const search = req.query.search as any;
+      const sortBy = req.query.sortBy as string;
+      const sortOrder = (req.query.sortOrder as "asc" | "desc") || "asc";
+
+      const result = await this.memberService.list({
+        page,
+        limit,
+        search,
+        sortBy,
+        sortOrder,
+      });
+
+      const pagination = {
+        page: result.currentPage,
         limit,
         total: result.total,
         totalPages: result.totalPages,
-      },
-    });
-  } catch (error: any) {
-    errorResponse(res, error.message || "Gagal mengambil daftar member", 500);
+      };
+
+      successResponse(res, "Member berhasil diambil", result.members, pagination);
+    } catch (error: any) {
+      throw new Error(error.message || "Gagal mengambil member");
+    }
   }
-};
 
-export const getById = async (req: Request, res: Response) => {
-  try {
-    const member = await getMemberById(req.params.id!);
-    successResponse(res, "Member berhasil ditemukan", member);
-  } catch (error: any) {
-    errorResponse(res, error.message, 404);
+  async getById(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.params.id) {
+        throw new Error("ID member tidak ditemukan");
+      }
+
+      const member = await this.memberService.getById(req.params.id);
+      successResponse(res, "Member berhasil diambil", member);
+    } catch (error: any) {
+      throw new Error(error.message || "Member tidak ditemukan");
+    }
   }
-};
 
-export const search = async (req: Request, res: Response) => {
-  try {
-    const { name, email, page, limit } = req.query;
+  async create(req: Request, res: Response): Promise<void> {
+    try {
+      const { email, name, phone, address } = req.body;
 
-    const result = await searchMembers(
-      name?.toString(),
-      email?.toString(),
-      page ? Number(page) : undefined,
-      limit ? Number(limit) : undefined
-    );
+      if (!email || !name) {
+        throw new Error("Email dan nama wajib diisi");
+      }
 
-    successResponse(res, "Pencarian member berhasil", result);
-  } catch (error: any) {
-    errorResponse(res, error.message || "Gagal mencari member", 500);
+      const data = {
+        email: email.toString(),
+        name: name.toString(),
+        phone: phone || undefined,
+        address: address || undefined,
+      };
+
+      const member = await this.memberService.create(data);
+      successResponse(res, "Member berhasil ditambahkan", member, null, 201);
+    } catch (error: any) {
+      throw new Error(error.message || "Gagal menambahkan member");
+    }
   }
-};
 
-export const create = async (req: Request, res: Response) => {
-  try {
-    const { email, name, phone } = req.body;
+  async update(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.params.id) {
+        throw new Error("ID member tidak ditemukan");
+      }
 
-    const newMember = await createMember(email, name, phone);
-    successResponse(res, "Member berhasil ditambahkan", newMember, 201);
-  } catch (error: any) {
-    errorResponse(res, error.message || "Gagal menambahkan member", 400);
+      const { email, name, phone, address } = req.body;
+      const updateData: any = {};
+
+      if (email !== undefined) updateData.email = email;
+      if (name !== undefined) updateData.name = name;
+      if (phone !== undefined) updateData.phone = phone;
+      if (address !== undefined) updateData.address = address;
+
+      const member = await this.memberService.update(req.params.id, updateData);
+      successResponse(res, "Member berhasil diupdate", member);
+    } catch (error: any) {
+      throw new Error(error.message || "Gagal mengupdate member");
+    }
   }
-};
 
-export const update = async (req: Request, res: Response) => {
-  try {
-    const member = await updateMember(req.params.id!, req.body);
-    successResponse(res, "Member berhasil diperbarui", member);
-  } catch (error: any) {
-    errorResponse(res, error.message, 404);
-  }
-};
+  async delete(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.params.id) {
+        throw new Error("ID member tidak ditemukan");
+      }
 
-export const remove = async (req: Request, res: Response) => {
-  try {
-    const deleted = await deleteMember(req.params.id!);
-    successResponse(res, "Member berhasil dihapus", deleted);
-  } catch (error: any) {
-    errorResponse(res, error.message, 404);
+      const deleted = await this.memberService.delete(req.params.id);
+      successResponse(res, "Member berhasil dihapus", deleted);
+    } catch (error: any) {
+      throw new Error(error.message || "Gagal menghapus member");
+    }
   }
-};
+
+  // HANYA TAMBAH 1 METHOD INI (SAMA DENGAN PRODUCT):
+  async getStats(_req: Request, res: Response): Promise<void> {
+    try {
+      const stats = await this.memberService.exec();
+      successResponse(res, "Statistik member berhasil diambil", stats, null, 200);
+    } catch (error: any) {
+      throw new Error(error.message || "Gagal mengambil statistik");
+    }
+  }
+}

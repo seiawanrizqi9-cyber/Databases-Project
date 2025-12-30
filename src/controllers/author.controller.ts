@@ -1,87 +1,125 @@
 import type { Request, Response } from "express";
-import { successResponse, errorResponse } from "../utils/response";
-import {
-  getAllAuthors,
-  getAuthorById,
-  searchAuthors,
-  createAuthor,
-  updateAuthor,
-  deleteAuthor,
-} from "../services/author.service";
+import { successResponse } from "../utils/response";
+import type { IAuthorService } from "../services/author.service";
 
-export const getAll = async (req: Request, res: Response) => {
-  try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+export interface IAuthorController {
+  list: (req: Request, res: Response) => Promise<void>;
+  getById: (req: Request, res: Response) => Promise<void>;
+  create: (req: Request, res: Response) => Promise<void>;
+  update: (req: Request, res: Response) => Promise<void>;
+  delete: (req: Request, res: Response) => Promise<void>;
+  
+  // HANYA TAMBAH 1 METHOD INI (SAMA DENGAN PRODUCT):
+  getStats: (req: Request, res: Response) => Promise<void>;
+}
 
-    const result = await getAllAuthors(page, limit);
+export class AuthorController implements IAuthorController {
+  constructor(private authorService: IAuthorService) {
+    this.getStats = this.getStats.bind(this);
+  }
 
-    successResponse(res, "Daftar author berhasil diambil", {
-      authors: result.authors,
-      pagination: {
-        page: result.page,
+  async list(req: Request, res: Response): Promise<void> {
+    try {
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;
+      const search = req.query.search as any;
+      const sortBy = req.query.sortBy as string;
+      const sortOrder = (req.query.sortOrder as "asc" | "desc") || "asc";
+
+      const result = await this.authorService.list({
+        page,
+        limit,
+        search,
+        sortBy,
+        sortOrder,
+      });
+
+      const pagination = {
+        page: result.currentPage,
         limit,
         total: result.total,
         totalPages: result.totalPages,
-      },
-    });
-  } catch (error: any) {
-    errorResponse(res, error.message || "Gagal mengambil daftar author", 500);
+      };
+
+      successResponse(res, "Author berhasil diambil", result.authors, pagination);
+    } catch (error: any) {
+      throw new Error(error.message || "Gagal mengambil author");
+    }
   }
-};
 
-export const getById = async (req: Request, res: Response) => {
-  try {
-    const author = await getAuthorById(req.params.id!);
-    successResponse(res, "Author berhasil ditemukan", author);
-  } catch (error: any) {
-    errorResponse(res, error.message, 404);
+  async getById(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.params.id) {
+        throw new Error("ID author tidak ditemukan");
+      }
+
+      const author = await this.authorService.getById(req.params.id);
+      successResponse(res, "Author berhasil diambil", author);
+    } catch (error: any) {
+      throw new Error(error.message || "Author tidak ditemukan");
+    }
   }
-};
 
-export const search = async (req: Request, res: Response) => {
-  try {
-    const { name, nationality, page, limit } = req.query;
+  async create(req: Request, res: Response): Promise<void> {
+    try {
+      const { name, bio, nationality } = req.body;
 
-    // SEDERHANA seperti project kemarin
-    const result = await searchAuthors(
-      name?.toString(),
-      nationality?.toString(),
-      page ? Number(page) : undefined,
-      limit ? Number(limit) : undefined
-    );
+      if (!name) {
+        throw new Error("Nama author wajib diisi");
+      }
 
-    successResponse(res, "Pencarian author berhasil", result);
-  } catch (error: any) {
-    errorResponse(res, error.message || "Gagal mencari author", 500);
+      const data = {
+        name: name.toString(),
+        bio: bio || undefined,
+        nationality: nationality || undefined,
+      };
+
+      const author = await this.authorService.create(data);
+      successResponse(res, "Author berhasil ditambahkan", author, null, 201);
+    } catch (error: any) {
+      throw new Error(error.message || "Gagal menambahkan author");
+    }
   }
-};
 
-export const create = async (req: Request, res: Response) => {
-  try {
-    const { name, bio, nationality } = req.body;
+  async update(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.params.id) {
+        throw new Error("ID author tidak ditemukan");
+      }
 
-    const newAuthor = await createAuthor(name, bio, nationality);
-    successResponse(res, "Author berhasil ditambahkan", newAuthor, 201);
-  } catch (error: any) {
-    errorResponse(res, error.message || "Gagal menambahkan author", 400);
+      const { name, bio, nationality } = req.body;
+      const updateData: any = {};
+
+      if (name !== undefined) updateData.name = name;
+      if (bio !== undefined) updateData.bio = bio;
+      if (nationality !== undefined) updateData.nationality = nationality;
+
+      const author = await this.authorService.update(req.params.id, updateData);
+      successResponse(res, "Author berhasil diupdate", author);
+    } catch (error: any) {
+      throw new Error(error.message || "Gagal mengupdate author");
+    }
   }
-};
 
-export const update = async (req: Request, res: Response) => {
-  try {
-    const author = await updateAuthor(req.params.id!, req.body);
-    successResponse(res, "Author berhasil diperbarui", author);
-  } catch (error: any) {
-    errorResponse(res, error.message, 404);
-  }
-};
+  async delete(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.params.id) {
+        throw new Error("ID author tidak ditemukan");
+      }
 
-export const remove = async (req: Request, res: Response) => {
-  try {
-    const deleted = await deleteAuthor(req.params.id!);
-    successResponse(res, "Author berhasil dihapus", deleted);
-  } catch (error: any) {
-    errorResponse(res, error.message, 404);
+      const deleted = await this.authorService.delete(req.params.id);
+      successResponse(res, "Author berhasil dihapus", deleted);
+    } catch (error: any) {
+      throw new Error(error.message || "Gagal menghapus author");
+    }
   }
-};
+
+  async getStats(_req: Request, res: Response): Promise<void> {
+    try {
+      const stats = await this.authorService.exec();
+      successResponse(res, "Statistik author berhasil diambil", stats, null, 200);
+    } catch (error: any) {
+      throw new Error(error.message || "Gagal mengambil statistik");
+    }
+  }
+}

@@ -1,0 +1,21 @@
+model Book {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  year        Int
+  genre       String
+  price       Decimal   @db.Decimal(10, 2)
+  stock       Int       @default(0)
+  image_url   String?
+  authorId    String
+  author      Author    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  categories  BookCategory[]
+  borrowItems BorrowItem[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@map("books")
+  @@index([title])
+  @@index([authorId])
+}

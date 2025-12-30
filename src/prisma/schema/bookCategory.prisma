@@ -1,0 +1,9 @@
+model BookCategory {
+  bookId     String
+  categoryId Int
+  book       Book     @relation(fields: [bookId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+  
+  @@id([bookId, categoryId])
+  @@map("book_categories")
+}

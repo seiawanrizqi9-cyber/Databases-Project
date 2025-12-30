@@ -1,0 +1,22 @@
+model BorrowItem {
+  id              String      @id @default(uuid())
+  borrowRecordId  String
+  bookId          String
+  quantity        Int         @default(1)
+  borrowRecord    BorrowRecord @relation(fields: [borrowRecordId], references: [id], onDelete: Cascade)
+  book            Book        @relation(fields: [bookId], references: [id])
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt       DateTime?
+
+  @@map("borrow_items")
+  @@index([borrowRecordId])
+  @@index([bookId])
+}
+
+enum BorrowStatus {
+  ACTIVE
+  RETURNED
+  OVERDUE
+  CANCELLED
+}

@@ -9,44 +9,28 @@ import helmet from "helmet";
 import cors from "cors";
 import { errorHandler } from "./middleware/error.handler";
 import { successResponse } from "./utils/response";
+
+import authRouter from "./routes/auth.route";
 import bookRouter from "./routes/book.route";
 import authorRouter from "./routes/author.route";
-import loanRouter from "./routes/loan.route";
+import borrowRouter from "./routes/borrow.route"; 
 import memberRouter from "./routes/member.route";
-import magicRouter from "./routes/magic.route";
+import categoryRouter from "./routes/category.route";
+import profileRouter from "./routes/profile.route";
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './utils/swagger';
 
 const app: Application = express();
 
-// Middleware
 app.use(helmet());
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
+app.use(express.static("public"));
+app.set("query parser", "extended");
 
-// API Key Middleware (SAMA seperti kemarin)
-app.use((req: Request, res: Response, next: NextFunction) => {
-  req.startTime = Date.now();
-  const apiKey = req.headers["x-api-key"] as string;
-  
-  if (!apiKey) {
-    return res.status(401).json({ 
-      success: false, 
-      message: "Kirim header X-API-Key" 
-    });
-  }
-  
-  if (apiKey !== "katasandi123") {
-    return res.status(401).json({ 
-      success: false, 
-      message: "API Key tidak valid!" 
-    });
-  }
-  
-  req.apikey = apiKey;
-  next();
-});
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Home endpoint (DIPERBARUI dengan resource baru)
 app.get("/", (req: Request, res: Response) => {
   const waktu = Date.now() - (req.startTime || 0);
   successResponse(res, "Selamat Datang di API Perpustakaan Digital!", {
@@ -54,60 +38,83 @@ app.get("/", (req: Request, res: Response) => {
     message: `Halo pemilik API Key: ${req.apikey}!`,
     waktu_proses: `${waktu}ms`,
     endpoints: {
+      auth: [
+        { path: "/api/auth/login", method: "POST", description: "Login user/member" },
+        { path: "/api/auth/register", method: "POST", description: "Register user baru" },
+      ],
       books: [
         { path: "/api/books", method: "GET", description: "Menampilkan semua buku" },
         { path: "/api/books/:id", method: "GET", description: "Menampilkan buku berdasarkan ID" },
         { path: "/api/books/search", method: "GET", description: "Mencari buku" },
-        { path: "/api/books", method: "POST", description: "Menambahkan buku baru" },
-        { path: "/api/books/:id", method: "PUT", description: "Mengubah buku" },
-        { path: "/api/books/:id", method: "DELETE", description: "Menghapus buku" },
+        { path: "/api/books", method: "POST", description: "Menambahkan buku baru (Admin only)" },
+        { path: "/api/books/:id", method: "PUT", description: "Mengubah buku (Admin only)" },
+        { path: "/api/books/:id", method: "DELETE", description: "Menghapus buku (Admin only)" },
       ],
       authors: [
         { path: "/api/authors", method: "GET", description: "Menampilkan semua author" },
         { path: "/api/authors/:id", method: "GET", description: "Menampilkan author berdasarkan ID" },
         { path: "/api/authors/search", method: "GET", description: "Mencari author" },
-        { path: "/api/authors", method: "POST", description: "Menambahkan author baru" },
-        { path: "/api/authors/:id", method: "PUT", description: "Mengubah author" },
-        { path: "/api/authors/:id", method: "DELETE", description: "Menghapus author" },
+        { path: "/api/authors", method: "POST", description: "Menambahkan author baru (Admin only)" },
+        { path: "/api/authors/:id", method: "PUT", description: "Mengubah author (Admin only)" },
+        { path: "/api/authors/:id", method: "DELETE", description: "Menghapus author (Admin only)" },
       ],
-      loans: [
-        { path: "/api/loans", method: "GET", description: "Menampilkan semua peminjaman" },
-        { path: "/api/loans/:id", method: "GET", description: "Menampilkan peminjaman berdasarkan ID" },
-        { path: "/api/loans/search", method: "GET", description: "Mencari peminjaman" },
-        { path: "/api/loans", method: "POST", description: "Membuat peminjaman baru" },
-        { path: "/api/loans/:id", method: "PUT", description: "Mengubah peminjaman" },
-        { path: "/api/loans/:id/return", method: "PATCH", description: "Mengembalikan buku" },
-        { path: "/api/loans/:id", method: "DELETE", description: "Menghapus peminjaman" },
+      borrow: [ 
+        { path: "/api/borrow", method: "POST", description: "Meminjam buku (Member only)" },
+        { path: "/api/borrow/my", method: "GET", description: "Lihat riwayat peminjaman sendiri (Member only)" },
+        { path: "/api/borrow/return", method: "POST", description: "Mengembalikan buku (Auth required)" },
+        { path: "/api/borrow", method: "GET", description: "Lihat semua peminjaman (Auth required)" },
+        { path: "/api/borrow/:id", method: "GET", description: "Lihat detail peminjaman (Auth required)" },
+        { path: "/api/borrow/:id", method: "PUT", description: "Update peminjaman (Admin only)" },
+        { path: "/api/borrow/:id", method: "DELETE", description: "Hapus peminjaman (Admin only)" },
       ],
       members: [
-        { path: "/api/members", method: "GET", description: "Menampilkan semua member" },
-        { path: "/api/members/:id", method: "GET", description: "Menampilkan member berdasarkan ID" },
-        { path: "/api/members/search", method: "GET", description: "Mencari member" },
-        { path: "/api/members", method: "POST", description: "Menambahkan member baru" },
-        { path: "/api/members/:id", method: "PUT", description: "Mengubah member" },
-        { path: "/api/members/:id", method: "DELETE", description: "Menghapus member" },
+        { path: "/api/members", method: "GET", description: "Menampilkan semua member (Admin only)" },
+        { path: "/api/members/:id", method: "GET", description: "Menampilkan member berdasarkan ID (Admin only)" },
+        { path: "/api/members/search", method: "GET", description: "Mencari member (Admin only)" },
+        { path: "/api/members", method: "POST", description: "Menambahkan member baru (Public)" },
+        { path: "/api/members/:id", method: "PUT", description: "Mengubah member (Admin only)" },
+        { path: "/api/members/:id", method: "DELETE", description: "Menghapus member (Admin only)" },
       ],
-      auth: "/api/auth",
+      categories: [
+        { path: "/api/categories", method: "GET", description: "Menampilkan semua kategori" },
+        { path: "/api/categories/:id", method: "GET", description: "Menampilkan kategori berdasarkan ID" },
+        { path: "/api/categories/search", method: "GET", description: "Mencari kategori" },
+        { path: "/api/categories", method: "POST", description: "Menambahkan kategori baru (Admin only)" },
+        { path: "/api/categories/:id", method: "PUT", description: "Mengubah kategori (Admin only)" },
+        { path: "/api/categories/:id", method: "DELETE", description: "Menghapus kategori (Admin only)" },
+        { path: "/api/categories/assign-book", method: "POST", description: "Menambahkan buku ke kategori (Admin only)" },
+        { path: "/api/categories/unassign-book", method: "POST", description: "Menghapus buku dari kategori (Admin only)" },
+      ],
+      profiles: [
+        { path: "/api/profiles", method: "GET", description: "Menampilkan semua profile (Auth required)" },
+        { path: "/api/profiles/:id", method: "GET", description: "Menampilkan profile berdasarkan ID (Auth required)" },
+        { path: "/api/profiles/user/:userId", method: "GET", description: "Menampilkan profile berdasarkan user ID (Auth required)" },
+        { path: "/api/profiles", method: "POST", description: "Membuat profile baru (Public)" },
+        { path: "/api/profiles/:id", method: "PUT", description: "Mengubah profile (Auth required)" },
+        { path: "/api/profiles/:id", method: "DELETE", description: "Menghapus profile (Auth required)" },
+      ],
     },
   });
 });
 
-// Register Routes
-app.use("/api/books", bookRouter);
-app.use("/api/authors", authorRouter);
-app.use("/api/loans", loanRouter);
-app.use("/api/members", memberRouter);
-app.use("/api/auth", magicRouter);
-
-// 404 Handler
-app.use(/.*/, (req: Request, res: Response) => {
-  res.status(404).json({
-    success: false,
-    message: `Route ${req.originalUrl} tidak ditemukan`,
-  });
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  console.log(`Request masuk: ${req.method} ${req.path}`);
+  req.startTime = Date.now();
+  next();
 });
 
-// Error Handler (Centralized)
+app.use("/api/auth", authRouter);
+app.use("/api/books", bookRouter);
+app.use("/api/authors", authorRouter);
+app.use("/api/borrow", borrowRouter);
+app.use("/api/members", memberRouter);
+app.use("/api/categories", categoryRouter);
+app.use("/api/profiles", profileRouter);
+
+app.use(/.*/, (req: Request, _res: Response) => {
+  throw new Error(`Route ${req.originalUrl} tidak ditemukan`);
+});
+
 app.use(errorHandler);
 
 export default app;

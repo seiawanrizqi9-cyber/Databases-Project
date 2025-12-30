@@ -1,96 +1,175 @@
-import { getPrisma } from "../prisma";
+import type { Author, Prisma, PrismaClient } from "../generated/client";
+import type { IAuthorRepository } from "../repository/author.repository";
 
-const prisma = getPrisma();
+interface FindAllAuthorsParams {
+  page: number;
+  limit: number;
+  search?: {
+    name?: string;
+    nationality?: string;
+  };
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}
 
-// GET ALL
-export const getAllAuthors = async (page?: number, limit?: number) => {
-  const pageNum = page || 1;
-  const limitNum = limit || 10;
-  const skip = (pageNum - 1) * limitNum;
+interface AuthorWithBooks extends Author {
+  books?: any[];
+}
 
-  const [authors, total] = await Promise.all([
-    prisma.author.findMany({
-      where: { deletedAt: null },
-      include: { books: true },
+interface AuthorListResponse {
+  authors: AuthorWithBooks[];
+  total: number;
+  totalPages: number;
+  currentPage: number;
+}
+
+export interface IAuthorService {
+  list(params: FindAllAuthorsParams): Promise<AuthorListResponse>;
+  getById(id: string): Promise<AuthorWithBooks>;
+  create(data: {
+    name: string;
+    bio?: string;
+    nationality?: string;
+  }): Promise<AuthorWithBooks>;
+  update(id: string, data: Partial<Author>): Promise<AuthorWithBooks>;
+  delete(id: string): Promise<AuthorWithBooks>;
+  
+  exec(): Promise<{ overview: any; byNationality: any }>;
+}
+
+export class AuthorService implements IAuthorService {
+  constructor(
+    private authorRepo: IAuthorRepository,
+    private prisma: PrismaClient
+  ) {}
+
+  async list(params: FindAllAuthorsParams): Promise<AuthorListResponse> {
+    const { page, limit, search, sortBy, sortOrder } = params;
+    const skip = (page - 1) * limit;
+
+    const whereClause: Prisma.AuthorWhereInput = {
+      deletedAt: null,
+    };
+
+    if (search?.name) {
+      whereClause.name = {
+        contains: search.name,
+        mode: "insensitive",
+      };
+    }
+
+    if (search?.nationality) {
+      whereClause.nationality = {
+        contains: search.nationality,
+        mode: "insensitive",
+      };
+    }
+
+    const sortCriteria: Prisma.AuthorOrderByWithRelationInput = sortBy
+      ? { [sortBy]: sortOrder || "desc" }
+      : { name: "asc" };
+
+    const authors = await this.authorRepo.list(
       skip,
-      take: limitNum,
-      orderBy: { name: "asc" },
-    }),
-    prisma.author.count({ where: { deletedAt: null } }),
-  ]);
+      limit,
+      whereClause,
+      sortCriteria
+    );
 
-  return { authors, total, page: pageNum, totalPages: Math.ceil(total / limitNum) };
-};
+    const total = await this.authorRepo.countAll(whereClause);
 
-// GET BY ID
-export const getAuthorById = async (id: string) => {
-  const author = await prisma.author.findUnique({
-    where: { id, deletedAt: null },
-    include: { books: { where: { deletedAt: null } } },
-  });
+    return {
+      authors: authors as AuthorWithBooks[],
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+    };
+  }
 
-  if (!author) throw new Error("Author tidak ditemukan");
-  return author;
-};
+  async getById(id: string): Promise<AuthorWithBooks> {
+    const author = await this.authorRepo.findById(id);
 
-// SEARCH - SEDERHANA
-export const searchAuthors = async (
-  name?: string,
-  nationality?: string,
-  page?: number,
-  limit?: number
-) => {
-  const pageNum = page || 1;
-  const limitNum = limit || 10;
-  const skip = (pageNum - 1) * limitNum;
+    if (!author) {
+      throw new Error("Author tidak ditemukan");
+    }
 
-  const where: any = { deletedAt: null };
+    return author as AuthorWithBooks;
+  }
 
-  if (name) where.name = { contains: name, mode: "insensitive" };
-  if (nationality) where.nationality = { contains: nationality, mode: "insensitive" };
+  async create(data: {
+    name: string;
+    bio?: string;
+    nationality?: string;
+  }): Promise<AuthorWithBooks> {
+    if (data.nationality) {
+      const existingAuthor = await this.prisma.author.findFirst({
+        where: {
+          name: data.name,
+          nationality: data.nationality,
+          deletedAt: null,
+        },
+      });
 
-  const [authors, total] = await Promise.all([
-    prisma.author.findMany({
-      where,
-      include: { books: true },
-      skip,
-      take: limitNum,
-      orderBy: { name: "asc" },
-    }),
-    prisma.author.count({ where }),
-  ]);
+      if (existingAuthor) {
+        throw new Error("Author dengan nama dan kebangsaan yang sama sudah ada");
+      }
+    }
 
-  return { authors, total, page: pageNum, totalPages: Math.ceil(total / limitNum) };
-};
+    return await this.authorRepo.create(data) as AuthorWithBooks;
+  }
 
-// CREATE
-export const createAuthor = async (
-  name: string,
-  bio?: string,
-  nationality?: string
-) => {
-  return await prisma.author.create({
-    data: {
-      name,
-      bio: bio || null,
-      nationality: nationality || null,
-    },
-  });
-};
+  async update(id: string, data: Partial<Author>): Promise<AuthorWithBooks> {
+    const author = await this.authorRepo.findById(id);
+    if (!author) {
+      throw new Error("Author tidak ditemukan");
+    }
 
-// UPDATE
-export const updateAuthor = async (id: string, data: any) => {
-  await getAuthorById(id);
-  return await prisma.author.update({
-    where: { id, deletedAt: null },
-    data,
-  });
-};
+    if (data.name || data.nationality) {
+      const nameToCheck = data.name || author.name;
+      const nationalityToCheck = data.nationality || (author as any).nationality;
 
-// DELETE
-export const deleteAuthor = async (id: string) => {
-  return await prisma.author.update({
-    where: { id, deletedAt: null },
-    data: { deletedAt: new Date() },
-  });
-};
+      if (nationalityToCheck) {
+        const existingAuthor = await this.prisma.author.findFirst({
+          where: {
+            name: nameToCheck,
+            nationality: nationalityToCheck,
+            deletedAt: null,
+            NOT: { id: id }
+          },
+        });
+
+        if (existingAuthor) {
+          throw new Error("Author dengan nama dan kebangsaan yang sama sudah ada");
+        }
+      }
+    }
+
+    return await this.authorRepo.update(id, data as Prisma.AuthorUpdateInput) as AuthorWithBooks;
+  }
+
+  async delete(id: string): Promise<AuthorWithBooks> {
+    const author = await this.authorRepo.findById(id, {
+      books: {
+        where: { deletedAt: null }
+      }
+    });
+
+    if (!author) {
+      throw new Error("Author tidak ditemukan");
+    }
+
+    const authorWithBooks = author as AuthorWithBooks;
+    if (authorWithBooks.books && authorWithBooks.books.length > 0) {
+      throw new Error("Tidak dapat menghapus author yang masih memiliki buku");
+    }
+
+    return await this.authorRepo.softDelete(id) as AuthorWithBooks;
+  }
+
+  async exec() {
+    const overview = await this.authorRepo.getStats();
+    const byNationality = await this.authorRepo.getAuthorsByNationalityStats();
+
+    return { overview, byNationality };
+  }
+}

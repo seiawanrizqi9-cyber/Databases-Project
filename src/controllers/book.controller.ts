@@ -1,111 +1,150 @@
 import type { Request, Response } from "express";
-import { successResponse, errorResponse } from "../utils/response";
-import {
-  getAllBooks,
-  getBookById,
-  searchBooks,
-  createBook,
-  updateBook,
-  deleteBook,
-} from "../services/book.service";
+import { successResponse } from "../utils/response";
+import type { IBookService } from "../services/book.service";
 
-export const getAll = async (req: Request, res: Response) => {
-  try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+export interface IBookController {
+  // SEMUA METHOD YANG SUDAH ADA TETAP SAMA...
+  list: (req: Request, res: Response) => Promise<void>;
+  getById: (req: Request, res: Response) => Promise<void>;
+  create: (req: Request, res: Response) => Promise<void>;
+  update: (req: Request, res: Response) => Promise<void>;
+  delete: (req: Request, res: Response) => Promise<void>;
+  
+  getStats: (req: Request, res: Response) => Promise<void>;
+}
 
-    const result = await getAllBooks(page, limit);
+export class BookController implements IBookController {
+  constructor(private bookService: IBookService) {
+    this.list = this.list.bind(this);
+    this.getById = this.getById.bind(this);
+    this.create = this.create.bind(this);
+    this.update = this.update.bind(this);
+    this.delete = this.delete.bind(this);
+    this.getStats = this.getStats.bind(this);
+  }
 
-    successResponse(res, "Daftar buku berhasil diambil", {
-      books: result.books,
-      pagination: {
-        page: result.page,
+  // SEMUA METHOD YANG SUDAH ADA TETAP SAMA PERSIS...
+  async list(req: Request, res: Response): Promise<void> {
+    try {
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;
+      const search = req.query.search as any;
+      const sortBy = req.query.sortBy as string;
+      const sortOrder = (req.query.sortOrder as "asc" | "desc") || "desc";
+
+      const result = await this.bookService.list({
+        page,
+        limit,
+        search,
+        sortBy,
+        sortOrder,
+      });
+
+      const pagination = {
+        page: result.currentPage,
         limit,
         total: result.total,
         totalPages: result.totalPages,
-      },
-    });
-  } catch (error: any) {
-    errorResponse(res, error.message || "Gagal mengambil daftar buku", 500);
+      };
+
+      successResponse(res, "Buku berhasil diambil", result.books, pagination);
+    } catch (error: any) {
+      throw new Error(error.message || "Gagal mengambil buku");
+    }
   }
-};
 
-export const getById = async (req: Request, res: Response) => {
-  try {
-    const book = await getBookById(req.params.id!);
-    successResponse(res, "Buku berhasil ditemukan", book);
-  } catch (error: any) {
-    errorResponse(res, error.message, 404);
+  async getById(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.params.id) {
+        throw new Error("ID buku tidak ditemukan");
+      }
+
+      const book = await this.bookService.getById(req.params.id);
+      successResponse(res, "Buku berhasil diambil", book);
+    } catch (error: any) {
+      throw new Error(error.message || "Buku tidak ditemukan");
+    }
   }
-};
 
-export const search = async (req: Request, res: Response) => {
-  try {
-    const {
-      title,
-      author,
-      genre,
-      min_price,
-      max_price,
-      min_year,
-      max_year,
-      page,
-      limit,
-    } = req.query;
+  async create(req: Request, res: Response): Promise<void> {
+    try {
+      const file = req.file;
+      const { title, authorId, description, year, genre, price, stock } =
+        req.body;
 
-    // SAMA PERSIS dengan product controller kemarin
-    const result = await searchBooks(
-      title?.toString(),
-      author?.toString(),
-      genre?.toString(),
-      min_price ? Number(min_price) : undefined,
-      max_price ? Number(max_price) : undefined,
-      min_year ? Number(min_year) : undefined,
-      max_year ? Number(max_year) : undefined,
-      page ? Number(page) : undefined,
-      limit ? Number(limit) : undefined
-    );
+      if (
+        !title ||
+        !authorId ||
+        !year ||
+        !genre ||
+        !price ||
+        stock === undefined
+      ) {
+        throw new Error("Semua field wajib diisi kecuali description");
+      }
 
-    successResponse(res, "Pencarian buku berhasil", result);
-  } catch (error: any) {
-    errorResponse(res, error.message || "Gagal mencari buku", 500);
+      const data = {
+        title: title.toString(),
+        authorId: authorId.toString(),
+        description: description,
+        year: Number(year),
+        genre: genre.toString(),
+        price: Number(price),
+        stock: Number(stock),
+        image_url: file ? `/books/${file.filename}` : undefined,
+      };
+
+      const book = await this.bookService.create(data);
+      successResponse(res, "Buku berhasil ditambahkan", book, null, 201);
+    } catch (error: any) {
+      throw new Error(error.message || "Gagal menambahkan buku");
+    }
   }
-};
 
-export const create = async (req: Request, res: Response) => {
-  try {
-    const { title, authorId, description, year, genre, price, stock } = req.body;
+  async update(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.params.id) {
+        throw new Error("ID buku tidak ditemukan");
+      }
 
-    const newBook = await createBook(
-      title,
-      authorId,
-      description,
-      year ? Number(year) : undefined,
-      genre,
-      price ? Number(price) : undefined,
-      stock ? Number(stock) : undefined
-    );
+      const file = req.file;
+      const updateData = { ...req.body };
 
-    successResponse(res, "Buku berhasil ditambahkan", newBook, 201);
-  } catch (error: any) {
-    errorResponse(res, error.message || "Gagal menambahkan buku", 400);
+      if (file) {
+        updateData.image_url = `/books/${file.filename}`;
+      }
+
+      if (updateData.year) updateData.year = Number(updateData.year);
+      if (updateData.price) updateData.price = Number(updateData.price);
+      if (updateData.stock) updateData.stock = Number(updateData.stock);
+
+      const book = await this.bookService.update(req.params.id, updateData);
+      successResponse(res, "Buku berhasil diupdate", book);
+    } catch (error: any) {
+      throw new Error(error.message || "Gagal mengupdate buku");
+    }
   }
-};
 
-export const update = async (req: Request, res: Response) => {
-  try {
-    const book = await updateBook(req.params.id!, req.body);
-    successResponse(res, "Buku berhasil diperbarui", book);
-  } catch (error: any) {
-    errorResponse(res, error.message, 404);
-  }
-};
+  async delete(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.params.id) {
+        throw new Error("ID buku tidak ditemukan");
+      }
 
-export const remove = async (req: Request, res: Response) => {
-  try {
-    const deletedBook = await deleteBook(req.params.id!);
-    successResponse(res, "Buku berhasil dihapus", deletedBook);
-  } catch (error: any) {
-    errorResponse(res, error.message, 404);
+      const deleted = await this.bookService.delete(req.params.id);
+      successResponse(res, "Buku berhasil dihapus", deleted);
+    } catch (error: any) {
+      throw new Error(error.message || "Gagal menghapus buku");
+    }
   }
-};
+
+  // HANYA TAMBAHKAN 1 METHOD INI (SESUAI REFERENSI ANDA):
+  async getStats(_req: Request, res: Response): Promise<void> {
+    try {
+      const stats = await this.bookService.exec();
+      successResponse(res, "Statistik buku berhasil diambil", stats, null, 200);
+    } catch (error: any) {
+      throw new Error(error.message || "Gagal mengambil statistik");
+    }
+  }
+}

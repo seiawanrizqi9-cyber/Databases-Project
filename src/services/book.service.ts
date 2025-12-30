@@ -1,133 +1,218 @@
-import { getPrisma } from "../prisma";
+import type { Book, Prisma, PrismaClient } from "../generated/client";
+import type { IBookRepository } from "../repository/book.repository";
 
-const prisma = getPrisma();
+// Interface yang sudah ada TETAP SAMA...
+interface FindAllBooksParams {
+  page: number;
+  limit: number;
+  search?: {
+    title?: string;
+    authorName?: string;
+    genre?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    minYear?: number;
+    maxYear?: number;
+  };
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}
 
-// GET ALL dengan pagination
-export const getAllBooks = async (page?: number, limit?: number) => {
-  const pageNum = page || 1;
-  const limitNum = limit || 10;
-  const skip = (pageNum - 1) * limitNum;
+interface BookListResponse {
+  books: Book[];
+  total: number;
+  totalPages: number;
+  currentPage: number;
+}
 
-  const [books, total] = await Promise.all([
-    prisma.book.findMany({
-      where: { deletedAt: null },
-      include: { author: true },
-      skip,
-      take: limitNum,
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.book.count({ where: { deletedAt: null } }),
-  ]);
+export interface IBookService {
+  // SEMUA METHOD YANG SUDAH ADA TETAP SAMA...
+  list(params: FindAllBooksParams): Promise<BookListResponse>;
+  getById(id: string): Promise<Book>;
+  create(data: {
+    title: string;
+    authorId: string;
+    description?: string;
+    year: number;
+    genre: string;
+    price: number;
+    stock: number;
+    image_url?: string;
+  }): Promise<Book>;
+  update(id: string, data: Partial<Book>): Promise<Book>;
+  delete(id: string): Promise<Book>;
+  checkStock(id: string): Promise<boolean>;
+  updateStock(id: string, change: number): Promise<Book>;
+  
+  // HANYA TAMBAHKAN 1 METHOD INI (SESUAI REFERENSI):
+  exec(): Promise<{ overview: any; byGenre: any }>;
+}
 
-  return { books, total, page: pageNum, totalPages: Math.ceil(total / limitNum) };
-};
+export class BookService implements IBookService {
+  constructor(
+    private bookRepo: IBookRepository,
+    private prisma: PrismaClient
+  ) {}
 
-// GET BY ID
-export const getBookById = async (id: string) => {
-  const book = await prisma.book.findUnique({
-    where: { id, deletedAt: null },
-    include: { author: true, loans: { include: { member: true } } },
-  });
+  // SEMUA METHOD YANG SUDAH ADA TETAP SAMA PERSIS...
+  async list(params: FindAllBooksParams): Promise<BookListResponse> {
+    // KODE YANG SUDAH ADA TETAP SAMA...
+    const { page, limit, search, sortBy, sortOrder } = params;
+    const skip = (page - 1) * limit;
 
-  if (!book) throw new Error("Buku tidak ditemukan");
-  return book;
-};
-
-// SEARCH - SEDERHANA seperti project kemarin
-export const searchBooks = async (
-  title?: string,
-  authorName?: string,
-  genre?: string,
-  minPrice?: number,
-  maxPrice?: number,
-  minYear?: number,
-  maxYear?: number,
-  page?: number,
-  limit?: number
-) => {
-  const pageNum = page || 1;
-  const limitNum = limit || 10;
-  const skip = (pageNum - 1) * limitNum;
-
-  const where: any = { deletedAt: null };
-
-  if (title) where.title = { contains: title, mode: "insensitive" };
-  if (genre) where.genre = { contains: genre, mode: "insensitive" };
-  if (minPrice !== undefined) where.price = { gte: minPrice };
-  if (maxPrice !== undefined) where.price = { lte: maxPrice };
-  if (minYear !== undefined) where.year = { gte: minYear };
-  if (maxYear !== undefined) where.year = { lte: maxYear };
-
-  if (authorName) {
-    where.author = {
-      name: { contains: authorName, mode: "insensitive" },
+    const whereClause: Prisma.BookWhereInput = {
       deletedAt: null,
+    };
+
+    if (search?.title) {
+      whereClause.title = {
+        contains: search.title,
+        mode: "insensitive",
+      };
+    }
+
+    if (search?.genre) {
+      whereClause.genre = {
+        contains: search.genre,
+        mode: "insensitive",
+      };
+    }
+
+    if (search?.minPrice !== undefined) {
+      whereClause.price = {
+        gte: search.minPrice,
+      };
+    }
+
+    if (search?.maxPrice !== undefined) {
+      whereClause.price = {
+        lte: search.maxPrice,
+      };
+    }
+
+    if (search?.minYear !== undefined) {
+      whereClause.year = {
+        gte: search.minYear,
+      };
+    }
+
+    if (search?.maxYear !== undefined) {
+      whereClause.year = {
+        lte: search.maxYear,
+      };
+    }
+
+    if (search?.authorName) {
+      whereClause.author = {
+        name: {
+          contains: search.authorName,
+          mode: "insensitive",
+        },
+        deletedAt: null,
+      };
+    }
+
+    const sortCriteria: Prisma.BookOrderByWithRelationInput = sortBy
+      ? { [sortBy]: sortOrder || "desc" }
+      : { createdAt: "desc" };
+
+    const books = await this.bookRepo.list(
+      skip,
+      limit,
+      whereClause,
+      sortCriteria
+    );
+
+    const total = await this.bookRepo.countAll(whereClause);
+
+    return {
+      books,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
     };
   }
 
-  const [books, total] = await Promise.all([
-    prisma.book.findMany({
-      where,
-      include: { author: true },
-      skip,
-      take: limitNum,
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.book.count({ where }),
-  ]);
+  async getById(id: string): Promise<Book> {
+    const book = await this.bookRepo.findById(id);
 
-  return {
-    books,
-    total,
-    page: pageNum,
-    totalPages: Math.ceil(total / limitNum),
-  };
-};
+    if (!book) {
+      throw new Error("Buku tidak ditemukan");
+    }
 
-// CREATE
-export const createBook = async (
-  title: string,
-  authorId: string,
-  description?: string,
-  year?: number,
-  genre?: string,
-  price?: number,
-  stock?: number
-) => {
-  // Validasi author
-  const author = await prisma.author.findUnique({
-    where: { id: authorId, deletedAt: null },
-  });
-  if (!author) throw new Error("Author tidak ditemukan");
+    return book;
+  }
 
-  return await prisma.book.create({
-    data: {
-      title,
-      description: description || null,
-      year: year || new Date().getFullYear(),
-      genre: genre || "Unknown",
-      price: price || 0,
-      stock: stock || 0,
-      authorId,
-    },
-    include: { author: true },
-  });
-};
+  async create(data: {
+    title: string;
+    authorId: string;
+    description?: string;
+    year: number;
+    genre: string;
+    price: number;
+    stock: number;
+    image_url?: string;
+  }): Promise<Book> {
+    const author = await this.prisma.author.findUnique({
+      where: { id: data.authorId, deletedAt: null },
+    });
 
-// UPDATE
-export const updateBook = async (id: string, data: any) => {
-  await getBookById(id); // Validasi exist
-  return await prisma.book.update({
-    where: { id, deletedAt: null },
-    data,
-    include: { author: true },
-  });
-};
+    if (!author) {
+      throw new Error("Author tidak ditemukan");
+    }
 
-// DELETE (soft)
-export const deleteBook = async (id: string) => {
-  return await prisma.book.update({
-    where: { id, deletedAt: null },
-    data: { deletedAt: new Date() },
-  });
-};
+    const createData: Prisma.BookCreateInput = {
+      title: data.title,
+      description: data.description,
+      year: data.year,
+      genre: data.genre,
+      price: data.price,
+      stock: data.stock,
+      author: {
+        connect: { id: data.authorId }
+      }
+    };
+
+    if (data.image_url) {
+      createData.image_url = data.image_url;
+    }
+
+    return await this.bookRepo.create(createData);
+  }
+
+  async update(id: string, data: Partial<Book>): Promise<Book> {
+    await this.getById(id);
+
+    if (data.authorId) {
+      const author = await this.prisma.author.findUnique({
+        where: { id: data.authorId, deletedAt: null },
+      });
+
+      if (!author) {
+        throw new Error("Author tidak ditemukan");
+      }
+    }
+
+    return await this.bookRepo.update(id, data as Prisma.BookUpdateInput);
+  }
+
+  async delete(id: string): Promise<Book> {
+    return await this.bookRepo.softDelete(id);
+  }
+
+  async checkStock(id: string): Promise<boolean> {
+    const book = await this.getById(id);
+    return book.stock > 0;
+  }
+
+  async updateStock(id: string, change: number): Promise<Book> {
+    return await this.bookRepo.updateStock(id, change);
+  }
+
+  async exec() {
+    const overview = await this.bookRepo.getStats();
+    const byGenre = await this.bookRepo.getBooksByGenreStats();
+
+    return { overview, byGenre };
+  }
+}

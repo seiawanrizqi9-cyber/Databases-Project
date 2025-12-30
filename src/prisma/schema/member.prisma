@@ -1,0 +1,13 @@
+model Member {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  phone         String?
+  address       String?
+  borrowRecords BorrowRecord[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  @@map("members")
+}

@@ -1,0 +1,13 @@
+model Author {
+  id          String    @id @default(uuid())
+  name        String
+  bio         String?
+  nationality String?
+  books       Book[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@map("authors")
+  @@unique([name, nationality])
+}

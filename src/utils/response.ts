@@ -4,14 +4,25 @@ interface ApiResponse {
   success: boolean;
   message: string;
   data?: unknown;
-  search_result?: unknown;
-  errors?: Array<{ field: string; message: string }>;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  errors?:
+    | Array<{
+        field: string;
+        message: string;
+      }>
+    | { stack?: string };
 }
 
 export const successResponse = (
   res: Response,
   message: string,
   data: unknown = null,
+  pagination: { page: number; limit: number; total: number, totalPages: number } | null = null,
   statusCode: number = 200
 ) => {
   const response: ApiResponse = {
@@ -20,12 +31,9 @@ export const successResponse = (
   };
 
   if (data !== null) {
-    if (data && typeof data === "object" && "books" in (data as any)) {
-      response.search_result = data;
-    } else {
-      response.data = data;
-    }
+    response.data = data;
   }
+  if (pagination) response.pagination = pagination;
 
   return res.status(statusCode).json(response);
 };
@@ -34,16 +42,17 @@ export const errorResponse = (
   res: Response,
   message: string,
   statusCode: number = 400,
-  errors: Array<{ field: string; message: string }> |  null = null
+  errors:
+    | Array<{ field: string; message: string }>
+    | { stack?: string }
+    | null = null
 ) => {
   const response: ApiResponse = {
     success: false,
     message,
   };
 
-  if (errors) {
-    response.errors = errors;
-  }
+  if (errors) response.errors = errors;
 
   return res.status(statusCode).json(response);
 };
