@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { MemberRepository } from "../repository/member.repository";
-import { MemberService } from "../services/member.service";
-import { MemberController } from "../controllers/member.controller";
-import { createMemberValidation, updateMemberValidation, getMemberByIdValidation, searchMembersValidation, } from "../middleware/member.validation";
-import { validate } from "../utils/validation";
-import { authenticate, adminOnly } from "../middleware/auth.validation";
+import { MemberRepository } from "../repository/member.repository.js";
+import { MemberService } from "../services/member.service.js";
+import { MemberController } from "../controllers/member.controller.js";
+import { createMemberValidation, updateMemberValidation, getMemberByIdValidation, searchMembersValidation, } from "../middleware/member.validation.js";
+import { validate } from "../utils/validation.js";
+import { authenticate, adminOnly } from "../middleware/auth.validation.js";
 import prismaInstance from "../prisma";
 const router = Router();
 const repo = new MemberRepository(prismaInstance);

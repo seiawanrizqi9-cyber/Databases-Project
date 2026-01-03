@@ -1,6 +1,6 @@
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import config from '../utils/env';
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import config from "../utils/env.js";
 export class AuthService {
     authRepo;
     constructor(authRepo
@@ -9,10 +9,10 @@ export class AuthService {
         this.authRepo = authRepo;
     }
     async register(data) {
-        const validRoles = ['USER', 'ADMIN'];
+        const validRoles = ["USER", "ADMIN"];
         const role = data.role && validRoles.includes(data.role.toUpperCase())
             ? data.role.toUpperCase()
-            : 'USER';
+            : "USER";
         // Cek apakah user sudah ada
         const existingUser = await this.authRepo.findUserByEmail(data.email);
         if (existingUser) {
@@ -71,7 +71,7 @@ export class AuthService {
             email: user.email,
             role: user.role,
             username: user.username
-        }, config.JWT_SECRET, { expiresIn: '24h' });
+        }, config.JWT_SECRET, { expiresIn: "24h" });
         return {
             user: {
                 id: user.id,

@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { CategoryRepository } from "../repository/category.repository";
-import { CategoryService } from "../services/category.service";
-import { CategoryController } from "../controllers/category.controller";
-import { validate } from "../utils/validation";
-import { authenticate, adminOnly } from "../middleware/auth.validation";
-import { createCategoryValidation, updateCategoryValidation, getCategoryByIdValidation, searchCategoriesValidation, } from "../middleware/category.validation";
+import { CategoryRepository } from "../repository/category.repository.js";
+import { CategoryService } from "../services/category.service.js";
+import { CategoryController } from "../controllers/category.controller.js";
+import { validate } from "../utils/validation.js";
+import { authenticate, adminOnly } from "../middleware/auth.validation.js";
+import { createCategoryValidation, updateCategoryValidation, getCategoryByIdValidation, searchCategoriesValidation, } from "../middleware/category.validation.js";
 import prismaInstance from "../prisma";
 const router = Router();
 const repo = new CategoryRepository(prismaInstance);

@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { ProfileRepository } from "../repository/profile.repository";
-import { ProfileService } from "../services/profile.service";
-import { ProfileController } from "../controllers/profile.controller";
-import { validate } from "../utils/validation";
-import { authenticate } from "../middleware/auth.validation";
-import { upload } from "../middleware/upload.validation";
-import { createProfileValidation, updateProfileValidation, getProfileByIdValidation, getProfileByUserIdValidation, } from "../middleware/profile.validation";
+import { ProfileRepository } from "../repository/profile.repository.js";
+import { ProfileService } from "../services/profile.service.js";
+import { ProfileController } from "../controllers/profile.controller.js";
+import { validate } from "../utils/validation.js";
+import { authenticate } from "../middleware/auth.validation.js";
+import { upload } from "../middleware/upload.validation.js";
+import { createProfileValidation, updateProfileValidation, getProfileByIdValidation, getProfileByUserIdValidation, } from "../middleware/profile.validation.js";
 import prismaInstance from "../prisma";
 const router = Router();
 const repo = new ProfileRepository(prismaInstance);
@@ -187,7 +187,7 @@ const controller = new ProfileController(service);
  *       Public endpoint untuk membuat profile.
  *       Setiap user hanya bisa memiliki 1 profile.
  */
-router.post("/", upload.single('profile_picture'), validate(createProfileValidation), controller.create);
+router.post("/", upload.single("profile_picture"), validate(createProfileValidation), controller.create);
 /**
  * @swagger
  * /profiles/stats/all:
@@ -422,7 +422,7 @@ router.get("/:id", authenticate, validate(getProfileByIdValidation), controller.
  *       404:
  *         description: Profile tidak ditemukan
  */
-router.put("/:id", authenticate, upload.single('profile_picture'), validate(updateProfileValidation), controller.update);
+router.put("/:id", authenticate, upload.single("profile_picture"), validate(updateProfileValidation), controller.update);
 /**
  * @swagger
  * /profiles/{id}:

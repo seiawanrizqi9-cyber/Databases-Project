@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { AuthRepository } from "../repository/auth.repository";
-import { AuthService } from "../services/auth.service";
-import { AuthController } from "../controllers/auth.controller";
-import { validate } from "../utils/validation";
-import { loginValidation, registerValidation } from "../middleware/auth.validation";
+import { AuthRepository } from "../repository/auth.repository.js";
+import { AuthService } from "../services/auth.service.js";
+import { AuthController } from "../controllers/auth.controller.js";
+import { validate } from "../utils/validation.js";
+import { loginValidation, registerValidation } from "../middleware/auth.validation.js";
 import prismaInstance from "../prisma";
 const router = Router();
 // Dependency Injection

@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
-import config from "../utils/env";
-import { errorResponse } from "../utils/response";
+import config from "../utils/env.js";
+import { errorResponse } from "../utils/response.js";
 import { body } from "express-validator";
 export const loginValidation = [
     body("email")
@@ -37,10 +37,10 @@ export const registerValidation = [
 ];
 export const authenticate = (req, res, next) => {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return errorResponse(res, "Token tidak ditemukan", 401);
     }
-    const token = authHeader.split(' ')[1];
+    const token = authHeader.split(" ")[1];
     try {
         const payload = jwt.verify(token, config.JWT_SECRET);
         req.user = {
@@ -51,10 +51,10 @@ export const authenticate = (req, res, next) => {
         next();
     }
     catch (error) {
-        if (error.name === 'JsonWebTokenError') {
+        if (error.name === "JsonWebTokenError") {
             errorResponse(res, "Token tidak valid", 401);
         }
-        else if (error.name === 'TokenExpiredError') {
+        else if (error.name === "TokenExpiredError") {
             errorResponse(res, "Token telah kadaluarsa", 401);
         }
         else {
@@ -66,7 +66,7 @@ export const adminOnly = (req, res, next) => {
     if (!req.user) {
         return errorResponse(res, "Unauthorized", 401);
     }
-    if (req.user.role !== 'ADMIN') {
+    if (req.user.role !== "ADMIN") {
         return errorResponse(res, "Akses ditolak. Hanya admin yang diperbolehkan.", 403);
     }
     next();
@@ -75,7 +75,7 @@ export const memberOnly = (req, res, next) => {
     if (!req.user) {
         return errorResponse(res, "Unauthorized", 401);
     }
-    if (req.user.role !== 'USER') {
+    if (req.user.role !== "USER") {
         return errorResponse(res, "Akses ditolak. Hanya member yang diperbolehkan.", 403);
     }
     next();

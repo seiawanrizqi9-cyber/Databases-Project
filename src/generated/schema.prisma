@@ -1,0 +1,162 @@
+model Author {
+  id          String    @id @default(uuid())
+  name        String
+  bio         String?
+  nationality String?
+  books       Book[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@unique([name, nationality])
+  @@map("authors")
+}
+
+model Book {
+  id          String         @id @default(uuid())
+  title       String
+  description String?
+  year        Int
+  genre       String
+  price       Decimal        @db.Decimal(10, 2)
+  stock       Int            @default(0)
+  image_url   String?
+  authorId    String
+  author      Author         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  categories  BookCategory[]
+  borrowItems BorrowItem[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  deletedAt   DateTime?
+
+  @@index([title])
+  @@index([authorId])
+  @@map("books")
+}
+
+model BookCategory {
+  bookId     String
+  categoryId Int
+  book       Book     @relation(fields: [bookId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@id([bookId, categoryId])
+  @@map("book_categories")
+}
+
+model BorrowItem {
+  id             String       @id @default(uuid())
+  borrowRecordId String
+  bookId         String
+  quantity       Int          @default(1)
+  borrowRecord   BorrowRecord @relation(fields: [borrowRecordId], references: [id], onDelete: Cascade)
+  book           Book         @relation(fields: [bookId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+
+  @@index([borrowRecordId])
+  @@index([bookId])
+  @@map("borrow_items")
+}
+
+enum BorrowStatus {
+  ACTIVE
+  RETURNED
+  OVERDUE
+  CANCELLED
+}
+
+model BorrowRecord {
+  id         String       @id @default(uuid())
+  memberId   String
+  member     Member       @relation(fields: [memberId], references: [id])
+  borrowDate DateTime     @default(now())
+  dueDate    DateTime
+  returnDate DateTime?
+  status     BorrowStatus @default(ACTIVE)
+  items      BorrowItem[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  deletedAt  DateTime?
+
+  @@index([memberId])
+  @@index([status])
+  @@map("borrow_records")
+}
+
+model Category {
+  id        Int            @id @default(autoincrement())
+  name      String         @unique
+  books     BookCategory[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("categories")
+}
+
+model Member {
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  phone         String?
+  address       String?
+  borrowRecords BorrowRecord[]
+  user_id       Int?           @unique // nullable
+  user          User?          @relation(fields: [user_id], references: [id])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+
+  @@index([email])
+  @@index([user_id])
+  @@map("members")
+}
+
+model Profile {
+  id                  Int       @id @default(autoincrement())
+  name                String
+  gender              String?
+  address             String?
+  profile_picture_url String?
+  user_id             Int       @unique
+  user                User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
+
+  @@index([user_id])
+  @@index([name])
+  @@map("profiles")
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  username      String    @unique
+  email         String    @unique
+  password_hash String
+  role          UserRole  @default(USER)
+  profile       Profile?
+  member        Member?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}

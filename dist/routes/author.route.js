@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { createAuthorValidation, updateAuthorValidation, getAuthorByIdValidation, searchAuthorsValidation, } from "../middleware/author.validation";
-import { authenticate, adminOnly } from "../middleware/auth.validation";
-import { AuthorRepository } from "../repository/author.repository";
-import { AuthorService } from "../services/author.service";
-import { AuthorController } from "../controllers/author.controller";
+import { createAuthorValidation, updateAuthorValidation, getAuthorByIdValidation, searchAuthorsValidation, } from "../middleware/author.validation.js";
+import { authenticate, adminOnly } from "../middleware/auth.validation.js";
+import { AuthorRepository } from "../repository/author.repository.js";
+import { AuthorService } from "../services/author.service.js";
+import { AuthorController } from "../controllers/author.controller.js";
 import prismaInstance from "../prisma";
-import { validate } from "../utils/validation"; // PASTIKAN IMPORT INI ADA
+import { validate } from "../utils/validation.js"; // PASTIKAN IMPORT INI ADA
 const router = Router();
 const repo = new AuthorRepository(prismaInstance);
 const service = new AuthorService(repo, prismaInstance); // TAMBAH prismaInstance
@@ -154,7 +154,7 @@ const controller = new AuthorController(service);
  *                     totalPages:
  *                       type: integer
  */
-router.get('/', controller.list);
+router.get("/", controller.list);
 /**
  * @swagger
  * /authors/search:
@@ -227,7 +227,7 @@ router.get('/', controller.list);
  *                     totalPages:
  *                       type: integer
  */
-router.get('/search', validate(searchAuthorsValidation), controller.list);
+router.get("/search", validate(searchAuthorsValidation), controller.list);
 /**
  * @swagger
  * /authors/{id}:
@@ -260,7 +260,7 @@ router.get('/search', validate(searchAuthorsValidation), controller.list);
  *       400:
  *         description: ID tidak valid
  */
-router.get('/:id', validate(getAuthorByIdValidation), controller.getById);
+router.get("/:id", validate(getAuthorByIdValidation), controller.getById);
 /**
  * @swagger
  * /authors:
@@ -296,7 +296,7 @@ router.get('/:id', validate(getAuthorByIdValidation), controller.getById);
  *       403:
  *         description: Bukan admin
  */
-router.post('/', authenticate, adminOnly, validate(createAuthorValidation), controller.create);
+router.post("/", authenticate, adminOnly, validate(createAuthorValidation), controller.create);
 /**
  * @swagger
  * /authors/{id}:
@@ -341,7 +341,7 @@ router.post('/', authenticate, adminOnly, validate(createAuthorValidation), cont
  *       404:
  *         description: Author tidak ditemukan
  */
-router.put('/:id', authenticate, adminOnly, validate(updateAuthorValidation), controller.update);
+router.put("/:id", authenticate, adminOnly, validate(updateAuthorValidation), controller.update);
 /**
  * @swagger
  * /authors/{id}:
@@ -378,7 +378,7 @@ router.put('/:id', authenticate, adminOnly, validate(updateAuthorValidation), co
  *       404:
  *         description: Author tidak ditemukan
  */
-router.delete('/:id', authenticate, adminOnly, validate(getAuthorByIdValidation), controller.delete);
+router.delete("/:id", authenticate, adminOnly, validate(getAuthorByIdValidation), controller.delete);
 /**
  * @swagger
  * /authors/stats/all:
@@ -407,6 +407,6 @@ router.delete('/:id', authenticate, adminOnly, validate(getAuthorByIdValidation)
  *                       items:
  *                         type: object
  */
-router.get('/stats/all', controller.getStats);
+router.get("/stats/all", controller.getStats);
 export default router;
 //# sourceMappingURL=author.route.js.map

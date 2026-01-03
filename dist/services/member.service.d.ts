@@ -1,5 +1,5 @@
 import type { Member, Prisma } from "../generated/client";
-import type { IMemberRepository } from "../repository/member.repository";
+import type { IMemberRepository } from "../repository/member.repository.js";
 interface FindAllMembersParams {
     page: number;
     limit: number;
@@ -55,7 +55,9 @@ export declare class MemberService implements IMemberService {
                 id: true;
             };
         }>;
-        byMonth: (Prisma.PickEnumerable<Prisma.MemberGroupByOutputType, ["createdAt"]> & {
+        byMonth: (Prisma.PickEnumerable<Prisma.MemberGroupByOutputType, [
+            "createdAt"
+        ]> & {
             _count: {
                 id: number;
             };

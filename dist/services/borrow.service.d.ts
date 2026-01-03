@@ -1,5 +1,5 @@
 import type { BorrowRecord, Prisma, PrismaClient } from "../generated/client";
-import type { IBorrowRecordRepository } from "../repository/borrowRecord.repository";
+import type { IBorrowRecordRepository } from "../repository/borrowRecord.repository.js";
 interface CreateBorrowRecordData {
     memberId: string;
     items: Array<{
@@ -64,7 +64,9 @@ export declare class BorrowService implements IBorrowService {
                 id: true;
             };
         }>;
-        byStatus: (Prisma.PickEnumerable<Prisma.BorrowRecordGroupByOutputType, ["status"]> & {
+        byStatus: (Prisma.PickEnumerable<Prisma.BorrowRecordGroupByOutputType, [
+            "status"
+        ]> & {
             _count: {
                 id: number;
             };

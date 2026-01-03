@@ -5,9 +5,6 @@ export interface IAuthRepository {
   createUser(data: Prisma.UserCreateInput): Promise<User>;
   updateUser(id: number, data: Prisma.UserUpdateInput): Promise<User>;
   updateUserPassword(id: number, passwordHash: string): Promise<User>;
-  findMemberByEmail(email: string): Promise<any | null>;
-  createMember(data: Prisma.MemberCreateInput): Promise<any>;
-  updateMember(id: string, data: Prisma.MemberUpdateInput): Promise<any>;
 }
 
 export class AuthRepository implements IAuthRepository {
@@ -20,7 +17,13 @@ export class AuthRepository implements IAuthRepository {
   }
 
   async createUser(data: Prisma.UserCreateInput): Promise<User> {
-    return await this.prisma.user.create({ data });
+    return await this.prisma.user.create({ 
+      data,
+      include: {
+        profile: true,
+        member: true
+      }
+    });
   }
 
   async updateUser(id: number, data: Prisma.UserUpdateInput): Promise<User> {
@@ -34,25 +37,6 @@ export class AuthRepository implements IAuthRepository {
     return await this.prisma.user.update({
       where: { id },
       data: { password_hash: passwordHash },
-    });
-  }
-
-  async findMemberByEmail(email: string): Promise<any | null> {
-    return await this.prisma.member.findUnique({
-      where: { email, deletedAt: null }
-    });
-  }
-
-  async createMember(data: Prisma.MemberCreateInput): Promise<any> {
-    return await this.prisma.member.create({
-      data
-    });
-  }
-
-  async updateMember(id: string, data: Prisma.MemberUpdateInput): Promise<any> {
-    return await this.prisma.member.update({
-      where: { id },
-      data
     });
   }
 }

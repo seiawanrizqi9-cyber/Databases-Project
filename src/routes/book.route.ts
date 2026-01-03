@@ -2,12 +2,12 @@ import { Router } from "express";
 import { BookRepository } from "../repository/book.repository";
 import { BookService } from "../services/book.service";
 import { BookController } from "../controllers/book.controller";
-import { 
-  createBookValidation, 
-  updateBookValidation, 
+import {
+  createBookValidation,
+  updateBookValidation,
   getBookByIdValidation,
   searchBooksValidation,
-  validate 
+  validate,
 } from "../middleware/book.validation";
 import { authenticate, adminOnly } from "../middleware/auth.validation";
 import { upload } from "../middleware/upload.validation";
@@ -34,149 +34,38 @@ const controller = new BookController(service);
  *       properties:
  *         id:
  *           type: string
- *           description: ID buku (UUID)
+ *           format: uuid
  *         title:
  *           type: string
- *           description: Judul buku
  *         description:
  *           type: string
- *           nullable: true
  *         year:
  *           type: integer
- *           description: Tahun terbit
  *         genre:
  *           type: string
- *           description: Genre buku
  *         price:
  *           type: number
  *           format: float
- *           description: Harga buku
  *         stock:
  *           type: integer
- *           description: Stok buku
  *         image_url:
  *           type: string
- *           nullable: true
  *         authorId:
  *           type: string
+ *           format: uuid
  *         createdAt:
  *           type: string
  *           format: date-time
  *         updatedAt:
  *           type: string
  *           format: date-time
- *         deletedAt:
- *           type: string
- *           format: date-time
- *           nullable: true
- *     BookWithAuthor:
- *       type: object
- *       properties:
- *         id:
- *           type: string
- *         title:
- *           type: string
- *         description:
- *           type: string
- *         year:
- *           type: integer
- *         genre:
- *           type: string
- *         price:
- *           type: number
- *         stock:
- *           type: integer
- *         image_url:
- *           type: string
- *         author:
- *           type: object
- *           properties:
- *             id:
- *               type: string
- *             name:
- *               type: string
- *             bio:
- *               type: string
- *         createdAt:
- *           type: string
- *           format: date-time
- *     BookInput:
- *       type: object
- *       required:
- *         - title
- *         - authorId
- *         - year
- *         - genre
- *         - price
- *         - stock
- *       properties:
- *         title:
- *           type: string
- *           example: "The Great Gatsby"
- *         authorId:
- *           type: string
- *           example: "uuid-author-id"
- *         description:
- *           type: string
- *           example: "A classic novel about the American Dream"
- *         year:
- *           type: integer
- *           example: 1925
- *         genre:
- *           type: string
- *           example: "Fiction"
- *         price:
- *           type: number
- *           format: float
- *           example: 25.99
- *         stock:
- *           type: integer
- *           example: 50
- *     BookUpdate:
- *       type: object
- *       properties:
- *         title:
- *           type: string
- *         authorId:
- *           type: string
- *         description:
- *           type: string
- *         year:
- *           type: integer
- *         genre:
- *           type: string
- *         price:
- *           type: number
- *           format: float
- *         stock:
- *           type: integer
- *     BookStats:
- *       type: object
- *       properties:
- *         overview:
- *           type: object
- *           properties:
- *             _count:
- *               type: object
- *             _avg:
- *               type: object
- *             _sum:
- *               type: object
- *             _min:
- *               type: object
- *             _max:
- *               type: object
- *         byGenre:
- *           type: array
- *           items:
- *             type: object
  */
 
 /**
  * @swagger
  * /books:
  *   get:
- *     summary: Mendapatkan daftar buku dengan pagination
+ *     summary: Mendapatkan daftar buku
  *     tags: [Books]
  *     parameters:
  *       - in: query
@@ -184,188 +73,77 @@ const controller = new BookController(service);
  *         schema:
  *           type: integer
  *           default: 1
- *         description: Nomor halaman
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
  *           default: 10
- *         description: Jumlah item per halaman
+ *       - in: query
+ *         name: title
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: authorName
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: genre
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
  *       - in: query
  *         name: sortBy
  *         schema:
  *           type: string
  *           enum: [title, year, price, createdAt, stock]
- *         description: Kolom untuk sorting
  *       - in: query
  *         name: sortOrder
  *         schema:
  *           type: string
  *           enum: [asc, desc]
  *           default: desc
- *         description: Urutan sorting
  *     responses:
  *       200:
  *         description: Daftar buku berhasil diambil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/BookWithAuthor'
- *                 pagination:
- *                   type: object
- *                   properties:
- *                     page:
- *                       type: integer
- *                     limit:
- *                       type: integer
- *                     total:
- *                       type: integer
- *                     totalPages:
- *                       type: integer
  */
-router.get('/', controller.list);
+router.get("/", controller.list);
 
 /**
  * @swagger
  * /books/search:
  *   get:
- *     summary: Mencari buku dengan filter kompleks
+ *     summary: Mencari buku
  *     tags: [Books]
- *     parameters:
- *       - in: query
- *         name: title
- *         schema:
- *           type: string
- *         description: Filter berdasarkan judul
- *       - in: query
- *         name: authorName
- *         schema:
- *           type: string
- *         description: Filter berdasarkan nama author
- *       - in: query
- *         name: genre
- *         schema:
- *           type: string
- *         description: Filter berdasarkan genre
- *       - in: query
- *         name: minPrice
- *         schema:
- *           type: number
- *           format: float
- *         description: Harga minimum
- *       - in: query
- *         name: maxPrice
- *         schema:
- *           type: number
- *           format: float
- *         description: Harga maksimum
- *       - in: query
- *         name: minYear
- *         schema:
- *           type: integer
- *         description: Tahun minimum
- *       - in: query
- *         name: maxYear
- *         schema:
- *           type: integer
- *         description: Tahun maksimum
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           default: 1
- *         description: Nomor halaman
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 10
- *         description: Jumlah item per halaman
- *       - in: query
- *         name: sortBy
- *         schema:
- *           type: string
- *           enum: [title, year, price, createdAt, stock]
- *         description: Kolom untuk sorting
- *       - in: query
- *         name: sortOrder
- *         schema:
- *           type: string
- *           enum: [asc, desc]
- *           default: desc
- *         description: Urutan sorting
  *     responses:
  *       200:
- *         description: Hasil pencarian buku berhasil diambil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/BookWithAuthor'
- *                 pagination:
- *                   type: object
- *                   properties:
- *                     page:
- *                       type: integer
- *                     limit:
- *                       type: integer
- *                     total:
- *                       type: integer
- *                     totalPages:
- *                       type: integer
+ *         description: Pencarian berhasil
  */
-router.get('/search', validate(searchBooksValidation), controller.list);
+router.get("/search", validate(searchBooksValidation), controller.list);
 
 /**
  * @swagger
  * /books/{id}:
  *   get:
- *     summary: Mendapatkan detail buku berdasarkan ID
+ *     summary: Mendapatkan buku berdasarkan ID
  *     tags: [Books]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *         description: ID buku
+ *           type: integer
  *     responses:
  *       200:
- *         description: Detail buku berhasil diambil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/BookWithAuthor'
- *       404:
- *         description: Buku tidak ditemukan
- *       400:
- *         description: ID tidak valid
+ *         description: Buku berhasil diambil
  */
-router.get('/:id', validate(getBookByIdValidation), controller.getById);
+router.get("/:id", validate(getBookByIdValidation), controller.getById);
 
 /**
  * @swagger
@@ -373,28 +151,19 @@ router.get('/:id', validate(getBookByIdValidation), controller.getById);
  *   get:
  *     summary: Mendapatkan statistik buku
  *     tags: [Books]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Statistik buku berhasil diambil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/BookStats'
+ *         description: Statistik berhasil diambil
  */
-router.get('/stats/all', controller.getStats);
+router.get("/stats/all", controller.getStats);
 
 /**
  * @swagger
  * /books:
  *   post:
- *     summary: Menambahkan buku baru (Admin only)
+ *     summary: Membuat buku baru (Admin only)
  *     tags: [Books]
  *     security:
  *       - bearerAuth: []
@@ -424,42 +193,21 @@ router.get('/stats/all', controller.getStats);
  *                 type: string
  *               price:
  *                 type: number
- *                 format: float
  *               stock:
  *                 type: integer
  *               image:
  *                 type: string
  *                 format: binary
- *                 description: Gambar cover buku
  *     responses:
  *       201:
- *         description: Buku berhasil ditambahkan
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/BookWithAuthor'
- *       400:
- *         description: Data tidak valid
- *       401:
- *         description: Tidak terautentikasi
- *       403:
- *         description: Bukan admin
- *       404:
- *         description: Author tidak ditemukan
+ *         description: Buku berhasil dibuat
  */
 router.post(
-  '/', 
-  authenticate, 
-  adminOnly, 
-  upload.single('image'), 
-  validate(createBookValidation), 
+  "/",
+  authenticate,
+  adminOnly,
+  upload.single("image"),
+  validate(createBookValidation),
   controller.create
 );
 
@@ -467,7 +215,7 @@ router.post(
  * @swagger
  * /books/{id}:
  *   put:
- *     summary: Mengupdate buku berdasarkan ID (Admin only)
+ *     summary: Mengupdate buku (Admin only)
  *     tags: [Books]
  *     security:
  *       - bearerAuth: []
@@ -476,8 +224,7 @@ router.post(
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *         description: ID buku
+ *           type: integer
  *     requestBody:
  *       required: true
  *       content:
@@ -497,42 +244,21 @@ router.post(
  *                 type: string
  *               price:
  *                 type: number
- *                 format: float
  *               stock:
  *                 type: integer
  *               image:
  *                 type: string
  *                 format: binary
- *                 description: Gambar cover buku baru (optional)
  *     responses:
  *       200:
  *         description: Buku berhasil diupdate
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/BookWithAuthor'
- *       400:
- *         description: Data tidak valid
- *       401:
- *         description: Tidak terautentikasi
- *       403:
- *         description: Bukan admin
- *       404:
- *         description: Buku atau author tidak ditemukan
  */
 router.put(
-  '/:id', 
-  authenticate, 
-  adminOnly, 
-  upload.single('image'), 
-  validate(updateBookValidation), 
+  "/:id",
+  authenticate,
+  adminOnly,
+  upload.single("image"),
+  validate(updateBookValidation),
   controller.update
 );
 
@@ -540,7 +266,7 @@ router.put(
  * @swagger
  * /books/{id}:
  *   delete:
- *     summary: Menghapus buku berdasarkan ID (soft delete, Admin only)
+ *     summary: Menghapus buku (Admin only)
  *     tags: [Books]
  *     security:
  *       - bearerAuth: []
@@ -549,34 +275,16 @@ router.put(
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *         description: ID buku
+ *           type: integer
  *     responses:
  *       200:
  *         description: Buku berhasil dihapus
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/Book'
- *       401:
- *         description: Tidak terautentikasi
- *       403:
- *         description: Bukan admin
- *       404:
- *         description: Buku tidak ditemukan
  */
 router.delete(
-  '/:id', 
-  authenticate, 
-  adminOnly, 
-  validate(getBookByIdValidation), 
+  "/:id",
+  authenticate,
+  adminOnly,
+  validate(getBookByIdValidation),
   controller.delete
 );
 

@@ -185,6 +185,7 @@ exports.Prisma.MemberScalarFieldEnum = {
   email: 'email',
   phone: 'phone',
   address: 'address',
+  user_id: 'user_id',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -192,10 +193,10 @@ exports.Prisma.MemberScalarFieldEnum = {
 
 exports.Prisma.ProfileScalarFieldEnum = {
   id: 'id',
+  name: 'name',
   gender: 'gender',
   address: 'address',
   profile_picture_url: 'profile_picture_url',
-  name: 'name',
   user_id: 'user_id',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',

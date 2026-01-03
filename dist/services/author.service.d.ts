@@ -1,5 +1,5 @@
 import type { Author, Prisma, PrismaClient } from "../generated/client";
-import type { IAuthorRepository } from "../repository/author.repository";
+import type { IAuthorRepository } from "../repository/author.repository.js";
 interface FindAllAuthorsParams {
     page: number;
     limit: number;
@@ -53,7 +53,9 @@ export declare class AuthorService implements IAuthorService {
                 id: true;
             };
         }>;
-        byNationality: (Prisma.PickEnumerable<Prisma.AuthorGroupByOutputType, ["nationality"]> & {
+        byNationality: (Prisma.PickEnumerable<Prisma.AuthorGroupByOutputType, [
+            "nationality"
+        ]> & {
             _count: {
                 id: number;
             };

@@ -3,7 +3,6 @@ import { successResponse } from "../utils/response";
 import type { IBookService } from "../services/book.service";
 
 export interface IBookController {
-  // SEMUA METHOD YANG SUDAH ADA TETAP SAMA...
   list: (req: Request, res: Response) => Promise<void>;
   getById: (req: Request, res: Response) => Promise<void>;
   create: (req: Request, res: Response) => Promise<void>;

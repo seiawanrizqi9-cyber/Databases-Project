@@ -1,5 +1,5 @@
 import type { Category, Prisma, PrismaClient } from "../generated/client";
-import type { ICategoryRepository } from "../repository/category.repository";
+import type { ICategoryRepository } from "../repository/category.repository.js";
 interface FindAllParams {
     page: number;
     limit: number;
@@ -48,7 +48,9 @@ export declare class CategoryService implements ICategoryService {
                 id: true;
             };
         }>;
-        byBookCount: (Prisma.PickEnumerable<Prisma.CategoryGroupByOutputType, ["name"]> & {
+        byBookCount: (Prisma.PickEnumerable<Prisma.CategoryGroupByOutputType, [
+            "name"
+        ]> & {
             _count: {
                 id: number;
             };

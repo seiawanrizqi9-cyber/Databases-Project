@@ -107,7 +107,7 @@ export const updateBookValidation = [
 ];
 
 export const getBookByIdValidation = [
-  param("id").isInt({ min: 1 }).withMessage("ID harus angka positif"),
+  param("id").isUUID().withMessage("ID harus format UUID"),
 ];
 
 export const searchBooksValidation = [

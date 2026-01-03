@@ -1,28 +1,28 @@
 import swaggerJSDoc from "swagger-jsdoc";
-import config from "./env";
+import config from "./env.js";
 const option = {
     definition: {
         openapi: "3.0.0",
         info: {
-            title: 'E-Commerce API Documentation',
-            version: '1.0.0',
-            description: 'Dokumentasi lengkap API E-Commerce',
+            title: "E-Commerce API Documentation",
+            version: "1.0.0",
+            description: "Dokumentasi lengkap API E-Commerce",
             contact: {
-                name: 'Backend Developer',
+                name: "Backend Developer",
             },
         },
         servers: [
             {
                 url: `${config.HOST}:${config.PORT}/api`,
-                description: 'Development server',
+                description: "Development server",
             }
         ],
         components: {
             securitySchemes: {
                 bearerAuth: {
-                    type: 'http',
-                    scheme: 'bearer',
-                    bearerFormat: 'JWT',
+                    type: "http",
+                    scheme: "bearer",
+                    bearerFormat: "JWT",
                 }
             }
         },
@@ -32,7 +32,7 @@ const option = {
             }
         ]
     },
-    apis: ['src/routes/*.ts']
+    apis: ["src/routes/*.ts"]
 };
 const swaggerSpec = swaggerJSDoc(option);
 export default swaggerSpec;
