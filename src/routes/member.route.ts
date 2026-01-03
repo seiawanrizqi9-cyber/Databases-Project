@@ -34,163 +34,50 @@ const controller = new MemberController(service);
  *       properties:
  *         id:
  *           type: string
- *           description: ID member (UUID)
+ *           format: uuid
  *         name:
  *           type: string
- *           description: Nama member
  *         email:
  *           type: string
- *           format: email
- *           description: Email member (unik)
  *         phone:
  *           type: string
- *           nullable: true
  *         address:
  *           type: string
- *           nullable: true
  *         createdAt:
  *           type: string
  *           format: date-time
  *         updatedAt:
  *           type: string
  *           format: date-time
- *         deletedAt:
- *           type: string
- *           format: date-time
- *           nullable: true
- *     MemberWithBorrows:
- *       type: object
- *       properties:
- *         id:
- *           type: string
- *         name:
- *           type: string
- *         email:
- *           type: string
- *         phone:
- *           type: string
- *         address:
- *           type: string
- *         borrowRecords:
- *           type: array
- *           items:
- *             type: object
- *             properties:
- *               id:
- *                 type: string
- *               borrowDate:
- *                 type: string
- *                 format: date-time
- *               dueDate:
- *                 type: string
- *                 format: date
- *               status:
- *                 type: string
- *               items:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     quantity:
- *                       type: integer
- *                     book:
- *                       type: object
- *                       properties:
- *                         title:
- *                           type: string
- *                         author:
- *                           type: object
- *                           properties:
- *                             name:
- *                               type: string
- *         createdAt:
- *           type: string
- *           format: date-time
- *         updatedAt:
- *           type: string
- *           format: date-time
- *     MemberInput:
- *       type: object
- *       required:
- *         - name
- *         - email
- *       properties:
- *         name:
- *           type: string
- *           example: "John Doe"
- *         email:
- *           type: string
- *           format: email
- *           example: "john@example.com"
- *         phone:
- *           type: string
- *           example: "+628123456789"
- *         address:
- *           type: string
- *           example: "Jl. Contoh No. 123"
- *     MemberUpdate:
- *       type: object
- *       properties:
- *         name:
- *           type: string
- *         email:
- *           type: string
- *           format: email
- *         phone:
- *           type: string
- *         address:
- *           type: string
- *     MemberStats:
- *       type: object
- *       properties:
- *         overview:
- *           type: object
- *           properties:
- *             _count:
- *               type: object
- *         byMonth:
- *           type: array
- *           items:
- *             type: object
- *             properties:
- *               createdAt:
- *                 type: string
- *                 format: date-time
- *               _count:
- *                 type: object
  */
 
 /**
  * @swagger
  * /members:
  *   post:
- *     summary: Registrasi member baru (Public)
+ *     summary: Mendaftarkan member baru
  *     tags: [Members]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/MemberInput'
+ *             type: object
+ *             required:
+ *               - email
+ *               - name
+ *             properties:
+ *               email:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               address:
+ *                 type: string
  *     responses:
  *       201:
- *         description: Member berhasil didaftarkan
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/MemberWithBorrows'
- *       400:
- *         description: Data tidak valid atau email sudah terdaftar
- *     description: |
- *       Public endpoint untuk registrasi member baru.
- *       Email harus unik (tidak boleh duplikat).
+ *         description: Member berhasil dibuat
  */
 router.post("/", validate(createMemberValidation), controller.create);
 
@@ -204,22 +91,7 @@ router.post("/", validate(createMemberValidation), controller.create);
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Statistik member berhasil diambil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/MemberStats'
- *       401:
- *         description: Tidak terautentikasi
- *       403:
- *         description: Bukan admin
+ *         description: Statistik berhasil diambil
  */
 router.get("/stats/all", authenticate, adminOnly, controller.getStats);
 
@@ -237,57 +109,37 @@ router.get("/stats/all", authenticate, adminOnly, controller.getStats);
  *         schema:
  *           type: integer
  *           default: 1
- *         description: Nomor halaman
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
  *           default: 10
- *         description: Jumlah item per halaman
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: email
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: phone
+ *         schema:
+ *           type: string
  *       - in: query
  *         name: sortBy
  *         schema:
  *           type: string
  *           enum: [name, email, createdAt]
- *         description: Kolom untuk sorting
  *       - in: query
  *         name: sortOrder
  *         schema:
  *           type: string
  *           enum: [asc, desc]
  *           default: asc
- *         description: | Urutan sorting Default: asc by name
  *     responses:
  *       200:
  *         description: Daftar member berhasil diambil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/MemberWithBorrows'
- *                 pagination:
- *                   type: object
- *                   properties:
- *                     page:
- *                       type: integer
- *                     limit:
- *                       type: integer
- *                     total:
- *                       type: integer
- *                     totalPages:
- *                       type: integer
- *       401:
- *         description: Tidak terautentikasi
- *       403:
- *         description: Bukan admin
  */
 router.get("/", authenticate, adminOnly, controller.list);
 
@@ -295,82 +147,13 @@ router.get("/", authenticate, adminOnly, controller.list);
  * @swagger
  * /members/search:
  *   get:
- *     summary: Mencari member dengan filter (Admin only)
+ *     summary: Mencari member (Admin only)
  *     tags: [Members]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         description: Filter berdasarkan nama member
- *       - in: query
- *         name: email
- *         schema:
- *           type: string
- *         description: Filter berdasarkan email
- *       - in: query
- *         name: phone
- *         schema:
- *           type: string
- *         description: Filter berdasarkan nomor telepon
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           default: 1
- *         description: Nomor halaman
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 10
- *         description: Jumlah item per halaman
- *       - in: query
- *         name: sortBy
- *         schema:
- *           type: string
- *           enum: [name, email, createdAt]
- *         description: Kolom untuk sorting
- *       - in: query
- *         name: sortOrder
- *         schema:
- *           type: string
- *           enum: [asc, desc]
- *           default: asc
- *         description: Urutan sorting
  *     responses:
  *       200:
- *         description: Hasil pencarian member berhasil diambil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/MemberWithBorrows'
- *                 pagination:
- *                   type: object
- *                   properties:
- *                     page:
- *                       type: integer
- *                     limit:
- *                       type: integer
- *                     total:
- *                       type: integer
- *                     totalPages:
- *                       type: integer
- *       401:
- *         description: Tidak terautentikasi
- *       403:
- *         description: Bukan admin
+ *         description: Pencarian berhasil
  */
 router.get(
   "/search",
@@ -384,7 +167,7 @@ router.get(
  * @swagger
  * /members/{id}:
  *   get:
- *     summary: Mendapatkan detail member berdasarkan ID (Admin only)
+ *     summary: Mendapatkan member berdasarkan ID (Admin only)
  *     tags: [Members]
  *     security:
  *       - bearerAuth: []
@@ -394,27 +177,10 @@ router.get(
  *         required: true
  *         schema:
  *           type: string
- *         description: ID member
+ *           format: uuid
  *     responses:
  *       200:
- *         description: Detail member berhasil diambil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/MemberWithBorrows'
- *       401:
- *         description: Tidak terautentikasi
- *       403:
- *         description: Bukan admin
- *       404:
- *         description: Member tidak ditemukan
+ *         description: Member berhasil diambil
  */
 router.get(
   "/:id",
@@ -428,7 +194,7 @@ router.get(
  * @swagger
  * /members/{id}:
  *   put:
- *     summary: Mengupdate member berdasarkan ID (Admin only)
+ *     summary: Mengupdate member (Admin only)
  *     tags: [Members]
  *     security:
  *       - bearerAuth: []
@@ -438,35 +204,25 @@ router.get(
  *         required: true
  *         schema:
  *           type: string
- *         description: ID member
+ *           format: uuid
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/MemberUpdate'
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               address:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Member berhasil diupdate
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/MemberWithBorrows'
- *       400:
- *         description: Data tidak valid atau email sudah digunakan
- *       401:
- *         description: Tidak terautentikasi
- *       403:
- *         description: Bukan admin
- *       404:
- *         description: Member tidak ditemukan
  */
 router.put(
   "/:id",
@@ -480,7 +236,7 @@ router.put(
  * @swagger
  * /members/{id}:
  *   delete:
- *     summary: Menghapus member (soft delete, Admin only)
+ *     summary: Menghapus member (Admin only)
  *     tags: [Members]
  *     security:
  *       - bearerAuth: []
@@ -490,31 +246,10 @@ router.put(
  *         required: true
  *         schema:
  *           type: string
- *         description: ID member
+ *           format: uuid
  *     responses:
  *       200:
  *         description: Member berhasil dihapus
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/Member'
- *       400:
- *         description: Member masih memiliki pinjaman aktif
- *       401:
- *         description: Tidak terautentikasi
- *       403:
- *         description: Bukan admin
- *       404:
- *         description: Member tidak ditemukan
- *     description: |
- *       Soft delete: Tidak bisa menghapus member yang masih memiliki pinjaman aktif (belum dikembalikan).
  */
 router.delete(
   "/:id",

@@ -1,5 +1,5 @@
 import type { Book, Prisma, PrismaClient } from "../generated/client";
-import type { IBookRepository } from "../repository/book.repository";
+import type { IBookRepository } from "../repository/book.repository.js";
 interface FindAllBooksParams {
     page: number;
     limit: number;
@@ -81,7 +81,9 @@ export declare class BookService implements IBookService {
                 price: true;
             };
         }>;
-        byGenre: (Prisma.PickEnumerable<Prisma.BookGroupByOutputType, ["genre"]> & {
+        byGenre: (Prisma.PickEnumerable<Prisma.BookGroupByOutputType, [
+            "genre"
+        ]> & {
             _avg: {
                 price: Prisma.Decimal | null;
             };

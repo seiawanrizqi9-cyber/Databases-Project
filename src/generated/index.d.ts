@@ -8553,8 +8553,18 @@ export namespace Prisma {
 
   export type AggregateMember = {
     _count: MemberCountAggregateOutputType | null
+    _avg: MemberAvgAggregateOutputType | null
+    _sum: MemberSumAggregateOutputType | null
     _min: MemberMinAggregateOutputType | null
     _max: MemberMaxAggregateOutputType | null
+  }
+
+  export type MemberAvgAggregateOutputType = {
+    user_id: number | null
+  }
+
+  export type MemberSumAggregateOutputType = {
+    user_id: number | null
   }
 
   export type MemberMinAggregateOutputType = {
@@ -8563,6 +8573,7 @@ export namespace Prisma {
     email: string | null
     phone: string | null
     address: string | null
+    user_id: number | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -8574,6 +8585,7 @@ export namespace Prisma {
     email: string | null
     phone: string | null
     address: string | null
+    user_id: number | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -8585,6 +8597,7 @@ export namespace Prisma {
     email: number
     phone: number
     address: number
+    user_id: number
     createdAt: number
     updatedAt: number
     deletedAt: number
@@ -8592,12 +8605,21 @@ export namespace Prisma {
   }
 
 
+  export type MemberAvgAggregateInputType = {
+    user_id?: true
+  }
+
+  export type MemberSumAggregateInputType = {
+    user_id?: true
+  }
+
   export type MemberMinAggregateInputType = {
     id?: true
     name?: true
     email?: true
     phone?: true
     address?: true
+    user_id?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -8609,6 +8631,7 @@ export namespace Prisma {
     email?: true
     phone?: true
     address?: true
+    user_id?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -8620,6 +8643,7 @@ export namespace Prisma {
     email?: true
     phone?: true
     address?: true
+    user_id?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -8664,6 +8688,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: MemberAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: MemberSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: MemberMinAggregateInputType
@@ -8694,6 +8730,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: MemberCountAggregateInputType | true
+    _avg?: MemberAvgAggregateInputType
+    _sum?: MemberSumAggregateInputType
     _min?: MemberMinAggregateInputType
     _max?: MemberMaxAggregateInputType
   }
@@ -8704,10 +8742,13 @@ export namespace Prisma {
     email: string
     phone: string | null
     address: string | null
+    user_id: number | null
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
     _count: MemberCountAggregateOutputType | null
+    _avg: MemberAvgAggregateOutputType | null
+    _sum: MemberSumAggregateOutputType | null
     _min: MemberMinAggregateOutputType | null
     _max: MemberMaxAggregateOutputType | null
   }
@@ -8732,10 +8773,12 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     address?: boolean
+    user_id?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
     borrowRecords?: boolean | Member$borrowRecordsArgs<ExtArgs>
+    user?: boolean | Member$userArgs<ExtArgs>
     _count?: boolean | MemberCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["member"]>
 
@@ -8745,9 +8788,11 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     address?: boolean
+    user_id?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
+    user?: boolean | Member$userArgs<ExtArgs>
   }, ExtArgs["result"]["member"]>
 
   export type MemberSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -8756,9 +8801,11 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     address?: boolean
+    user_id?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
+    user?: boolean | Member$userArgs<ExtArgs>
   }, ExtArgs["result"]["member"]>
 
   export type MemberSelectScalar = {
@@ -8767,23 +8814,30 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     address?: boolean
+    user_id?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
   }
 
-  export type MemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "phone" | "address" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["member"]>
+  export type MemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "phone" | "address" | "user_id" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["member"]>
   export type MemberInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     borrowRecords?: boolean | Member$borrowRecordsArgs<ExtArgs>
+    user?: boolean | Member$userArgs<ExtArgs>
     _count?: boolean | MemberCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type MemberIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type MemberIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type MemberIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | Member$userArgs<ExtArgs>
+  }
+  export type MemberIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | Member$userArgs<ExtArgs>
+  }
 
   export type $MemberPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Member"
     objects: {
       borrowRecords: Prisma.$BorrowRecordPayload<ExtArgs>[]
+      user: Prisma.$UserPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -8791,6 +8845,7 @@ export namespace Prisma {
       email: string
       phone: string | null
       address: string | null
+      user_id: number | null
       createdAt: Date
       updatedAt: Date
       deletedAt: Date | null
@@ -9189,6 +9244,7 @@ export namespace Prisma {
   export interface Prisma__MemberClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     borrowRecords<T extends Member$borrowRecordsArgs<ExtArgs> = {}>(args?: Subset<T, Member$borrowRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BorrowRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    user<T extends Member$userArgs<ExtArgs> = {}>(args?: Subset<T, Member$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -9223,6 +9279,7 @@ export namespace Prisma {
     readonly email: FieldRef<"Member", 'String'>
     readonly phone: FieldRef<"Member", 'String'>
     readonly address: FieldRef<"Member", 'String'>
+    readonly user_id: FieldRef<"Member", 'Int'>
     readonly createdAt: FieldRef<"Member", 'DateTime'>
     readonly updatedAt: FieldRef<"Member", 'DateTime'>
     readonly deletedAt: FieldRef<"Member", 'DateTime'>
@@ -9475,6 +9532,10 @@ export namespace Prisma {
      */
     data: MemberCreateManyInput | MemberCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -9545,6 +9606,10 @@ export namespace Prisma {
      * Limit how many Members to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -9638,6 +9703,25 @@ export namespace Prisma {
   }
 
   /**
+   * Member.user
+   */
+  export type Member$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
    * Member without action
    */
   export type MemberDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9680,10 +9764,10 @@ export namespace Prisma {
 
   export type ProfileMinAggregateOutputType = {
     id: number | null
+    name: string | null
     gender: string | null
     address: string | null
     profile_picture_url: string | null
-    name: string | null
     user_id: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -9692,10 +9776,10 @@ export namespace Prisma {
 
   export type ProfileMaxAggregateOutputType = {
     id: number | null
+    name: string | null
     gender: string | null
     address: string | null
     profile_picture_url: string | null
-    name: string | null
     user_id: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -9704,10 +9788,10 @@ export namespace Prisma {
 
   export type ProfileCountAggregateOutputType = {
     id: number
+    name: number
     gender: number
     address: number
     profile_picture_url: number
-    name: number
     user_id: number
     createdAt: number
     updatedAt: number
@@ -9728,10 +9812,10 @@ export namespace Prisma {
 
   export type ProfileMinAggregateInputType = {
     id?: true
+    name?: true
     gender?: true
     address?: true
     profile_picture_url?: true
-    name?: true
     user_id?: true
     createdAt?: true
     updatedAt?: true
@@ -9740,10 +9824,10 @@ export namespace Prisma {
 
   export type ProfileMaxAggregateInputType = {
     id?: true
+    name?: true
     gender?: true
     address?: true
     profile_picture_url?: true
-    name?: true
     user_id?: true
     createdAt?: true
     updatedAt?: true
@@ -9752,10 +9836,10 @@ export namespace Prisma {
 
   export type ProfileCountAggregateInputType = {
     id?: true
+    name?: true
     gender?: true
     address?: true
     profile_picture_url?: true
-    name?: true
     user_id?: true
     createdAt?: true
     updatedAt?: true
@@ -9851,10 +9935,10 @@ export namespace Prisma {
 
   export type ProfileGroupByOutputType = {
     id: number
+    name: string
     gender: string | null
     address: string | null
     profile_picture_url: string | null
-    name: string
     user_id: number
     createdAt: Date
     updatedAt: Date
@@ -9882,10 +9966,10 @@ export namespace Prisma {
 
   export type ProfileSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    name?: boolean
     gender?: boolean
     address?: boolean
     profile_picture_url?: boolean
-    name?: boolean
     user_id?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -9895,10 +9979,10 @@ export namespace Prisma {
 
   export type ProfileSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    name?: boolean
     gender?: boolean
     address?: boolean
     profile_picture_url?: boolean
-    name?: boolean
     user_id?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -9908,10 +9992,10 @@ export namespace Prisma {
 
   export type ProfileSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    name?: boolean
     gender?: boolean
     address?: boolean
     profile_picture_url?: boolean
-    name?: boolean
     user_id?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -9921,17 +10005,17 @@ export namespace Prisma {
 
   export type ProfileSelectScalar = {
     id?: boolean
+    name?: boolean
     gender?: boolean
     address?: boolean
     profile_picture_url?: boolean
-    name?: boolean
     user_id?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
   }
 
-  export type ProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "gender" | "address" | "profile_picture_url" | "name" | "user_id" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["profile"]>
+  export type ProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "gender" | "address" | "profile_picture_url" | "user_id" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["profile"]>
   export type ProfileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -9949,10 +10033,10 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
+      name: string
       gender: string | null
       address: string | null
       profile_picture_url: string | null
-      name: string
       user_id: number
       createdAt: Date
       updatedAt: Date
@@ -10382,10 +10466,10 @@ export namespace Prisma {
    */
   interface ProfileFieldRefs {
     readonly id: FieldRef<"Profile", 'Int'>
+    readonly name: FieldRef<"Profile", 'String'>
     readonly gender: FieldRef<"Profile", 'String'>
     readonly address: FieldRef<"Profile", 'String'>
     readonly profile_picture_url: FieldRef<"Profile", 'String'>
-    readonly name: FieldRef<"Profile", 'String'>
     readonly user_id: FieldRef<"Profile", 'Int'>
     readonly createdAt: FieldRef<"Profile", 'DateTime'>
     readonly updatedAt: FieldRef<"Profile", 'DateTime'>
@@ -11027,6 +11111,7 @@ export namespace Prisma {
     updatedAt?: boolean
     deletedAt?: boolean
     profile?: boolean | User$profileArgs<ExtArgs>
+    member?: boolean | User$memberArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -11065,6 +11150,7 @@ export namespace Prisma {
   export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "email" | "password_hash" | "role" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     profile?: boolean | User$profileArgs<ExtArgs>
+    member?: boolean | User$memberArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
   export type UserIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -11073,6 +11159,7 @@ export namespace Prisma {
     name: "User"
     objects: {
       profile: Prisma.$ProfilePayload<ExtArgs> | null
+      member: Prisma.$MemberPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -11478,6 +11565,7 @@ export namespace Prisma {
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     profile<T extends User$profileArgs<ExtArgs> = {}>(args?: Subset<T, User$profileArgs<ExtArgs>>): Prisma__ProfileClient<$Result.GetResult<Prisma.$ProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    member<T extends User$memberArgs<ExtArgs> = {}>(args?: Subset<T, User$memberArgs<ExtArgs>>): Prisma__MemberClient<$Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -11922,6 +12010,25 @@ export namespace Prisma {
   }
 
   /**
+   * User.member
+   */
+  export type User$memberArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Member
+     */
+    select?: MemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Member
+     */
+    omit?: MemberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberInclude<ExtArgs> | null
+    where?: MemberWhereInput
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -12037,6 +12144,7 @@ export namespace Prisma {
     email: 'email',
     phone: 'phone',
     address: 'address',
+    user_id: 'user_id',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     deletedAt: 'deletedAt'
@@ -12047,10 +12155,10 @@ export namespace Prisma {
 
   export const ProfileScalarFieldEnum: {
     id: 'id',
+    name: 'name',
     gender: 'gender',
     address: 'address',
     profile_picture_url: 'profile_picture_url',
-    name: 'name',
     user_id: 'user_id',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
@@ -12623,10 +12731,12 @@ export namespace Prisma {
     email?: StringFilter<"Member"> | string
     phone?: StringNullableFilter<"Member"> | string | null
     address?: StringNullableFilter<"Member"> | string | null
+    user_id?: IntNullableFilter<"Member"> | number | null
     createdAt?: DateTimeFilter<"Member"> | Date | string
     updatedAt?: DateTimeFilter<"Member"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Member"> | Date | string | null
     borrowRecords?: BorrowRecordListRelationFilter
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
   }
 
   export type MemberOrderByWithRelationInput = {
@@ -12635,15 +12745,18 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrderInput | SortOrder
     address?: SortOrderInput | SortOrder
+    user_id?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
     borrowRecords?: BorrowRecordOrderByRelationAggregateInput
+    user?: UserOrderByWithRelationInput
   }
 
   export type MemberWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     email?: string
+    user_id?: number
     AND?: MemberWhereInput | MemberWhereInput[]
     OR?: MemberWhereInput[]
     NOT?: MemberWhereInput | MemberWhereInput[]
@@ -12654,7 +12767,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Member"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Member"> | Date | string | null
     borrowRecords?: BorrowRecordListRelationFilter
-  }, "id" | "email">
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id" | "email" | "user_id">
 
   export type MemberOrderByWithAggregationInput = {
     id?: SortOrder
@@ -12662,12 +12776,15 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrderInput | SortOrder
     address?: SortOrderInput | SortOrder
+    user_id?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
     _count?: MemberCountOrderByAggregateInput
+    _avg?: MemberAvgOrderByAggregateInput
     _max?: MemberMaxOrderByAggregateInput
     _min?: MemberMinOrderByAggregateInput
+    _sum?: MemberSumOrderByAggregateInput
   }
 
   export type MemberScalarWhereWithAggregatesInput = {
@@ -12679,6 +12796,7 @@ export namespace Prisma {
     email?: StringWithAggregatesFilter<"Member"> | string
     phone?: StringNullableWithAggregatesFilter<"Member"> | string | null
     address?: StringNullableWithAggregatesFilter<"Member"> | string | null
+    user_id?: IntNullableWithAggregatesFilter<"Member"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"Member"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Member"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Member"> | Date | string | null
@@ -12689,10 +12807,10 @@ export namespace Prisma {
     OR?: ProfileWhereInput[]
     NOT?: ProfileWhereInput | ProfileWhereInput[]
     id?: IntFilter<"Profile"> | number
+    name?: StringFilter<"Profile"> | string
     gender?: StringNullableFilter<"Profile"> | string | null
     address?: StringNullableFilter<"Profile"> | string | null
     profile_picture_url?: StringNullableFilter<"Profile"> | string | null
-    name?: StringFilter<"Profile"> | string
     user_id?: IntFilter<"Profile"> | number
     createdAt?: DateTimeFilter<"Profile"> | Date | string
     updatedAt?: DateTimeFilter<"Profile"> | Date | string
@@ -12702,10 +12820,10 @@ export namespace Prisma {
 
   export type ProfileOrderByWithRelationInput = {
     id?: SortOrder
+    name?: SortOrder
     gender?: SortOrderInput | SortOrder
     address?: SortOrderInput | SortOrder
     profile_picture_url?: SortOrderInput | SortOrder
-    name?: SortOrder
     user_id?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12719,10 +12837,10 @@ export namespace Prisma {
     AND?: ProfileWhereInput | ProfileWhereInput[]
     OR?: ProfileWhereInput[]
     NOT?: ProfileWhereInput | ProfileWhereInput[]
+    name?: StringFilter<"Profile"> | string
     gender?: StringNullableFilter<"Profile"> | string | null
     address?: StringNullableFilter<"Profile"> | string | null
     profile_picture_url?: StringNullableFilter<"Profile"> | string | null
-    name?: StringFilter<"Profile"> | string
     createdAt?: DateTimeFilter<"Profile"> | Date | string
     updatedAt?: DateTimeFilter<"Profile"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Profile"> | Date | string | null
@@ -12731,10 +12849,10 @@ export namespace Prisma {
 
   export type ProfileOrderByWithAggregationInput = {
     id?: SortOrder
+    name?: SortOrder
     gender?: SortOrderInput | SortOrder
     address?: SortOrderInput | SortOrder
     profile_picture_url?: SortOrderInput | SortOrder
-    name?: SortOrder
     user_id?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12751,10 +12869,10 @@ export namespace Prisma {
     OR?: ProfileScalarWhereWithAggregatesInput[]
     NOT?: ProfileScalarWhereWithAggregatesInput | ProfileScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"Profile"> | number
+    name?: StringWithAggregatesFilter<"Profile"> | string
     gender?: StringNullableWithAggregatesFilter<"Profile"> | string | null
     address?: StringNullableWithAggregatesFilter<"Profile"> | string | null
     profile_picture_url?: StringNullableWithAggregatesFilter<"Profile"> | string | null
-    name?: StringWithAggregatesFilter<"Profile"> | string
     user_id?: IntWithAggregatesFilter<"Profile"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Profile"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Profile"> | Date | string
@@ -12774,6 +12892,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"User"> | Date | string
     deletedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     profile?: XOR<ProfileNullableScalarRelationFilter, ProfileWhereInput> | null
+    member?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
   }
 
   export type UserOrderByWithRelationInput = {
@@ -12786,6 +12905,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
     profile?: ProfileOrderByWithRelationInput
+    member?: MemberOrderByWithRelationInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -12801,6 +12921,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"User"> | Date | string
     deletedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     profile?: XOR<ProfileNullableScalarRelationFilter, ProfileWhereInput> | null
+    member?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
   }, "id" | "username" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -13268,6 +13389,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     borrowRecords?: BorrowRecordCreateNestedManyWithoutMemberInput
+    user?: UserCreateNestedOneWithoutMemberInput
   }
 
   export type MemberUncheckedCreateInput = {
@@ -13276,6 +13398,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     address?: string | null
+    user_id?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -13292,6 +13415,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     borrowRecords?: BorrowRecordUpdateManyWithoutMemberNestedInput
+    user?: UserUpdateOneWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateInput = {
@@ -13300,6 +13424,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    user_id?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -13312,6 +13437,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     address?: string | null
+    user_id?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -13334,16 +13460,17 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    user_id?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ProfileCreateInput = {
+    name: string
     gender?: string | null
     address?: string | null
     profile_picture_url?: string | null
-    name: string
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -13352,10 +13479,10 @@ export namespace Prisma {
 
   export type ProfileUncheckedCreateInput = {
     id?: number
+    name: string
     gender?: string | null
     address?: string | null
     profile_picture_url?: string | null
-    name: string
     user_id: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13363,10 +13490,10 @@ export namespace Prisma {
   }
 
   export type ProfileUpdateInput = {
+    name?: StringFieldUpdateOperationsInput | string
     gender?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     profile_picture_url?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -13375,10 +13502,10 @@ export namespace Prisma {
 
   export type ProfileUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
     gender?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     profile_picture_url?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: StringFieldUpdateOperationsInput | string
     user_id?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13387,10 +13514,10 @@ export namespace Prisma {
 
   export type ProfileCreateManyInput = {
     id?: number
+    name: string
     gender?: string | null
     address?: string | null
     profile_picture_url?: string | null
-    name: string
     user_id: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13398,10 +13525,10 @@ export namespace Prisma {
   }
 
   export type ProfileUpdateManyMutationInput = {
+    name?: StringFieldUpdateOperationsInput | string
     gender?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     profile_picture_url?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -13409,10 +13536,10 @@ export namespace Prisma {
 
   export type ProfileUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
     gender?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     profile_picture_url?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: StringFieldUpdateOperationsInput | string
     user_id?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13428,6 +13555,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     profile?: ProfileCreateNestedOneWithoutUserInput
+    member?: MemberCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -13440,6 +13568,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
+    member?: MemberUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -13451,6 +13580,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     profile?: ProfileUpdateOneWithoutUserNestedInput
+    member?: MemberUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -13463,6 +13593,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
+    member?: MemberUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -13967,10 +14098,26 @@ export namespace Prisma {
     id?: SortOrder
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type BorrowRecordListRelationFilter = {
     every?: BorrowRecordWhereInput
     some?: BorrowRecordWhereInput
     none?: BorrowRecordWhereInput
+  }
+
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
   }
 
   export type BorrowRecordOrderByRelationAggregateInput = {
@@ -13983,9 +14130,14 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     address?: SortOrder
+    user_id?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
+  }
+
+  export type MemberAvgOrderByAggregateInput = {
+    user_id?: SortOrder
   }
 
   export type MemberMaxOrderByAggregateInput = {
@@ -13994,6 +14146,7 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     address?: SortOrder
+    user_id?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -14005,9 +14158,30 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     address?: SortOrder
+    user_id?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
+  }
+
+  export type MemberSumOrderByAggregateInput = {
+    user_id?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type UserScalarRelationFilter = {
@@ -14017,10 +14191,10 @@ export namespace Prisma {
 
   export type ProfileCountOrderByAggregateInput = {
     id?: SortOrder
+    name?: SortOrder
     gender?: SortOrder
     address?: SortOrder
     profile_picture_url?: SortOrder
-    name?: SortOrder
     user_id?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -14034,10 +14208,10 @@ export namespace Prisma {
 
   export type ProfileMaxOrderByAggregateInput = {
     id?: SortOrder
+    name?: SortOrder
     gender?: SortOrder
     address?: SortOrder
     profile_picture_url?: SortOrder
-    name?: SortOrder
     user_id?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -14046,10 +14220,10 @@ export namespace Prisma {
 
   export type ProfileMinOrderByAggregateInput = {
     id?: SortOrder
+    name?: SortOrder
     gender?: SortOrder
     address?: SortOrder
     profile_picture_url?: SortOrder
-    name?: SortOrder
     user_id?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -14071,6 +14245,11 @@ export namespace Prisma {
   export type ProfileNullableScalarRelationFilter = {
     is?: ProfileWhereInput | null
     isNot?: ProfileWhereInput | null
+  }
+
+  export type MemberNullableScalarRelationFilter = {
+    is?: MemberWhereInput | null
+    isNot?: MemberWhereInput | null
   }
 
   export type UserCountOrderByAggregateInput = {
@@ -14461,6 +14640,12 @@ export namespace Prisma {
     connect?: BorrowRecordWhereUniqueInput | BorrowRecordWhereUniqueInput[]
   }
 
+  export type UserCreateNestedOneWithoutMemberInput = {
+    create?: XOR<UserCreateWithoutMemberInput, UserUncheckedCreateWithoutMemberInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMemberInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type BorrowRecordUncheckedCreateNestedManyWithoutMemberInput = {
     create?: XOR<BorrowRecordCreateWithoutMemberInput, BorrowRecordUncheckedCreateWithoutMemberInput> | BorrowRecordCreateWithoutMemberInput[] | BorrowRecordUncheckedCreateWithoutMemberInput[]
     connectOrCreate?: BorrowRecordCreateOrConnectWithoutMemberInput | BorrowRecordCreateOrConnectWithoutMemberInput[]
@@ -14480,6 +14665,24 @@ export namespace Prisma {
     update?: BorrowRecordUpdateWithWhereUniqueWithoutMemberInput | BorrowRecordUpdateWithWhereUniqueWithoutMemberInput[]
     updateMany?: BorrowRecordUpdateManyWithWhereWithoutMemberInput | BorrowRecordUpdateManyWithWhereWithoutMemberInput[]
     deleteMany?: BorrowRecordScalarWhereInput | BorrowRecordScalarWhereInput[]
+  }
+
+  export type UserUpdateOneWithoutMemberNestedInput = {
+    create?: XOR<UserCreateWithoutMemberInput, UserUncheckedCreateWithoutMemberInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMemberInput
+    upsert?: UserUpsertWithoutMemberInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutMemberInput, UserUpdateWithoutMemberInput>, UserUncheckedUpdateWithoutMemberInput>
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type BorrowRecordUncheckedUpdateManyWithoutMemberNestedInput = {
@@ -14516,10 +14719,22 @@ export namespace Prisma {
     connect?: ProfileWhereUniqueInput
   }
 
+  export type MemberCreateNestedOneWithoutUserInput = {
+    create?: XOR<MemberCreateWithoutUserInput, MemberUncheckedCreateWithoutUserInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutUserInput
+    connect?: MemberWhereUniqueInput
+  }
+
   export type ProfileUncheckedCreateNestedOneWithoutUserInput = {
     create?: XOR<ProfileCreateWithoutUserInput, ProfileUncheckedCreateWithoutUserInput>
     connectOrCreate?: ProfileCreateOrConnectWithoutUserInput
     connect?: ProfileWhereUniqueInput
+  }
+
+  export type MemberUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<MemberCreateWithoutUserInput, MemberUncheckedCreateWithoutUserInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutUserInput
+    connect?: MemberWhereUniqueInput
   }
 
   export type EnumUserRoleFieldUpdateOperationsInput = {
@@ -14536,6 +14751,16 @@ export namespace Prisma {
     update?: XOR<XOR<ProfileUpdateToOneWithWhereWithoutUserInput, ProfileUpdateWithoutUserInput>, ProfileUncheckedUpdateWithoutUserInput>
   }
 
+  export type MemberUpdateOneWithoutUserNestedInput = {
+    create?: XOR<MemberCreateWithoutUserInput, MemberUncheckedCreateWithoutUserInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutUserInput
+    upsert?: MemberUpsertWithoutUserInput
+    disconnect?: MemberWhereInput | boolean
+    delete?: MemberWhereInput | boolean
+    connect?: MemberWhereUniqueInput
+    update?: XOR<XOR<MemberUpdateToOneWithWhereWithoutUserInput, MemberUpdateWithoutUserInput>, MemberUncheckedUpdateWithoutUserInput>
+  }
+
   export type ProfileUncheckedUpdateOneWithoutUserNestedInput = {
     create?: XOR<ProfileCreateWithoutUserInput, ProfileUncheckedCreateWithoutUserInput>
     connectOrCreate?: ProfileCreateOrConnectWithoutUserInput
@@ -14544,6 +14769,16 @@ export namespace Prisma {
     delete?: ProfileWhereInput | boolean
     connect?: ProfileWhereUniqueInput
     update?: XOR<XOR<ProfileUpdateToOneWithWhereWithoutUserInput, ProfileUpdateWithoutUserInput>, ProfileUncheckedUpdateWithoutUserInput>
+  }
+
+  export type MemberUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<MemberCreateWithoutUserInput, MemberUncheckedCreateWithoutUserInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutUserInput
+    upsert?: MemberUpsertWithoutUserInput
+    disconnect?: MemberWhereInput | boolean
+    delete?: MemberWhereInput | boolean
+    connect?: MemberWhereUniqueInput
+    update?: XOR<XOR<MemberUpdateToOneWithWhereWithoutUserInput, MemberUpdateWithoutUserInput>, MemberUncheckedUpdateWithoutUserInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -14749,6 +14984,33 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumBorrowStatusFilter<$PrismaModel>
     _max?: NestedEnumBorrowStatusFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedEnumUserRoleFilter<$PrismaModel = never> = {
@@ -15274,6 +15536,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    user?: UserCreateNestedOneWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutBorrowRecordsInput = {
@@ -15282,6 +15545,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     address?: string | null
+    user_id?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -15340,6 +15604,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutBorrowRecordsInput = {
@@ -15348,6 +15613,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    user_id?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -15437,6 +15703,34 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type UserCreateWithoutMemberInput = {
+    username: string
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    profile?: ProfileCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutMemberInput = {
+    id?: number
+    username: string
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutMemberInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutMemberInput, UserUncheckedCreateWithoutMemberInput>
+  }
+
   export type BorrowRecordUpsertWithWhereUniqueWithoutMemberInput = {
     where: BorrowRecordWhereUniqueInput
     update: XOR<BorrowRecordUpdateWithoutMemberInput, BorrowRecordUncheckedUpdateWithoutMemberInput>
@@ -15468,6 +15762,40 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"BorrowRecord"> | Date | string | null
   }
 
+  export type UserUpsertWithoutMemberInput = {
+    update: XOR<UserUpdateWithoutMemberInput, UserUncheckedUpdateWithoutMemberInput>
+    create: XOR<UserCreateWithoutMemberInput, UserUncheckedCreateWithoutMemberInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutMemberInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutMemberInput, UserUncheckedUpdateWithoutMemberInput>
+  }
+
+  export type UserUpdateWithoutMemberInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    profile?: ProfileUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutMemberInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    username?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
+  }
+
   export type UserCreateWithoutProfileInput = {
     username: string
     email: string
@@ -15476,6 +15804,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    member?: MemberCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProfileInput = {
@@ -15487,6 +15816,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    member?: MemberUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProfileInput = {
@@ -15513,6 +15843,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    member?: MemberUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProfileInput = {
@@ -15524,13 +15855,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    member?: MemberUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ProfileCreateWithoutUserInput = {
+    name: string
     gender?: string | null
     address?: string | null
     profile_picture_url?: string | null
-    name: string
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -15538,10 +15870,10 @@ export namespace Prisma {
 
   export type ProfileUncheckedCreateWithoutUserInput = {
     id?: number
+    name: string
     gender?: string | null
     address?: string | null
     profile_picture_url?: string | null
-    name: string
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -15550,6 +15882,35 @@ export namespace Prisma {
   export type ProfileCreateOrConnectWithoutUserInput = {
     where: ProfileWhereUniqueInput
     create: XOR<ProfileCreateWithoutUserInput, ProfileUncheckedCreateWithoutUserInput>
+  }
+
+  export type MemberCreateWithoutUserInput = {
+    id?: string
+    name: string
+    email: string
+    phone?: string | null
+    address?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    borrowRecords?: BorrowRecordCreateNestedManyWithoutMemberInput
+  }
+
+  export type MemberUncheckedCreateWithoutUserInput = {
+    id?: string
+    name: string
+    email: string
+    phone?: string | null
+    address?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    borrowRecords?: BorrowRecordUncheckedCreateNestedManyWithoutMemberInput
+  }
+
+  export type MemberCreateOrConnectWithoutUserInput = {
+    where: MemberWhereUniqueInput
+    create: XOR<MemberCreateWithoutUserInput, MemberUncheckedCreateWithoutUserInput>
   }
 
   export type ProfileUpsertWithoutUserInput = {
@@ -15564,10 +15925,10 @@ export namespace Prisma {
   }
 
   export type ProfileUpdateWithoutUserInput = {
+    name?: StringFieldUpdateOperationsInput | string
     gender?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     profile_picture_url?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -15575,13 +15936,48 @@ export namespace Prisma {
 
   export type ProfileUncheckedUpdateWithoutUserInput = {
     id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
     gender?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     profile_picture_url?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type MemberUpsertWithoutUserInput = {
+    update: XOR<MemberUpdateWithoutUserInput, MemberUncheckedUpdateWithoutUserInput>
+    create: XOR<MemberCreateWithoutUserInput, MemberUncheckedCreateWithoutUserInput>
+    where?: MemberWhereInput
+  }
+
+  export type MemberUpdateToOneWithWhereWithoutUserInput = {
+    where?: MemberWhereInput
+    data: XOR<MemberUpdateWithoutUserInput, MemberUncheckedUpdateWithoutUserInput>
+  }
+
+  export type MemberUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    borrowRecords?: BorrowRecordUpdateManyWithoutMemberNestedInput
+  }
+
+  export type MemberUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    borrowRecords?: BorrowRecordUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type BookCreateManyAuthorInput = {

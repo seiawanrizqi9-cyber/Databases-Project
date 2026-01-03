@@ -1,5 +1,5 @@
 import { Prisma } from "../generated/client";
-import { errorResponse } from "../utils/response";
+import { errorResponse } from "../utils/response.js";
 export const errorHandler = (err, _req, res, _next) => {
     console.error("ERROR:", err.message);
     // Handle Prisma Errors

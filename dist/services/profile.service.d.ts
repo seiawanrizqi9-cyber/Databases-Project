@@ -1,5 +1,5 @@
 import type { Profile, Prisma, PrismaClient } from "../generated/client";
-import type { IProfileRepository } from "../repository/profile.repository";
+import type { IProfileRepository } from "../repository/profile.repository.js";
 interface FindAllProfilesParams {
     page: number;
     limit: number;
@@ -60,7 +60,9 @@ export declare class ProfileService implements IProfileService {
                 id: true;
             };
         }>;
-        byGender: (Prisma.PickEnumerable<Prisma.ProfileGroupByOutputType, ["gender"]> & {
+        byGender: (Prisma.PickEnumerable<Prisma.ProfileGroupByOutputType, [
+            "gender"
+        ]> & {
             _count: {
                 id: number;
             };

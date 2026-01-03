@@ -25,41 +25,49 @@ const controller = new BorrowController(service);
 /**
  * @swagger
  * tags:
- *   name: Borrows
- *   description: Manajemen peminjaman buku perpustakaan
+ *   name: Borrow
+ *   description: Manajemen peminjaman dan pengembalian buku
  */
 
 /**
  * @swagger
  * components:
  *   schemas:
+ *     BorrowRecord:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         memberId:
+ *           type: string
+ *           format: uuid
+ *         borrowDate:
+ *           type: string
+ *           format: date-time
+ *         dueDate:
+ *           type: string
+ *           format: date-time
+ *         returnDate:
+ *           type: string
+ *           format: date-time
+ *         status:
+ *           type: string
+ *           enum: [ACTIVE, RETURNED, OVERDUE, CANCELLED]
+ *     
  *     BorrowItem:
  *       type: object
- *       required:
- *         - bookId
- *         - quantity
  *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
  *         bookId:
  *           type: string
- *           example: "uuid-book-id"
+ *           format: uuid
  *         quantity:
  *           type: integer
- *           minimum: 1
- *           example: 2
- *     ReturnItem:
- *       type: object
- *       required:
- *         - borrowItemId
- *         - quantity
- *       properties:
- *         borrowItemId:
- *           type: string
- *           example: "uuid-borrow-item-id"
- *         quantity:
- *           type: integer
- *           minimum: 1
- *           example: 1
- *     BorrowRequest:
+ *     
+ *     CreateBorrowRequest:
  *       type: object
  *       required:
  *         - items
@@ -68,12 +76,22 @@ const controller = new BorrowController(service);
  *         items:
  *           type: array
  *           items:
- *             $ref: '#/components/schemas/BorrowItem'
+ *             type: object
+ *             required:
+ *               - bookId
+ *               - quantity
+ *             properties:
+ *               bookId:
+ *                 type: string
+ *                 format: uuid
+ *               quantity:
+ *                 type: integer
+ *                 minimum: 1
  *         dueDate:
  *           type: string
- *           format: date
- *           example: "2024-12-31"
- *     ReturnRequest:
+ *           format: date-time
+ *     
+ *     ReturnBorrowRequest:
  *       type: object
  *       required:
  *         - borrowRecordId
@@ -81,125 +99,29 @@ const controller = new BorrowController(service);
  *       properties:
  *         borrowRecordId:
  *           type: string
- *           example: "uuid-borrow-record-id"
+ *           format: uuid
  *         returnItems:
  *           type: array
  *           items:
- *             $ref: '#/components/schemas/ReturnItem'
- *     BorrowRecord:
- *       type: object
- *       properties:
- *         id:
- *           type: string
- *           description: ID peminjaman
- *         memberId:
- *           type: string
- *           description: ID member
- *         borrowDate:
- *           type: string
- *           format: date-time
- *         dueDate:
- *           type: string
- *           format: date
- *         returnDate:
- *           type: string
- *           format: date-time
- *           nullable: true
- *         status:
- *           type: string
- *           enum: [ACTIVE, RETURNED, OVERDUE]
- *         createdAt:
- *           type: string
- *           format: date-time
- *         updatedAt:
- *           type: string
- *           format: date-time
- *         deletedAt:
- *           type: string
- *           format: date-time
- *           nullable: true
- *     BorrowRecordWithDetails:
- *       type: object
- *       properties:
- *         id:
- *           type: string
- *         memberId:
- *           type: string
- *         borrowDate:
- *           type: string
- *           format: date-time
- *         dueDate:
- *           type: string
- *           format: date
- *         returnDate:
- *           type: string
- *           format: date-time
- *           nullable: true
- *         status:
- *           type: string
- *         member:
- *           type: object
- *           properties:
- *             id:
- *               type: string
- *             name:
- *               type: string
- *             email:
- *               type: string
- *         items:
- *           type: array
- *           items:
  *             type: object
+ *             required:
+ *               - borrowItemId
+ *               - quantity
  *             properties:
- *               id:
+ *               borrowItemId:
  *                 type: string
- *               bookId:
- *                 type: string
+ *                 format: uuid
  *               quantity:
  *                 type: integer
- *               book:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                   title:
- *                     type: string
- *                   author:
- *                     type: object
- *                     properties:
- *                       name:
- *                         type: string
- *         createdAt:
- *           type: string
- *           format: date-time
- *         updatedAt:
- *           type: string
- *           format: date-time
- *     BorrowStats:
- *       type: object
- *       properties:
- *         overview:
- *           type: object
- *           properties:
- *             _count:
- *               type: object
- *         byStatus:
- *           type: array
- *           items:
- *             type: object
- *             properties:
- *               status:
- *                 type: string
- *               _count:
- *                 type: object
+ *                 minimum: 1
  */
 
 /**
  * @swagger
- * /borrows:
+ * /borrow:
  *   post:
- *     summary: Membuat peminjaman baru (Member only)
- *     tags: [Borrows]
+ *     summary: Membuat peminjaman buku baru (Member only)
+ *     tags: [Borrow]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -207,33 +129,18 @@ const controller = new BorrowController(service);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/BorrowRequest'
+ *             $ref: '#/components/schemas/CreateBorrowRequest'
  *     responses:
  *       201:
  *         description: Peminjaman berhasil dibuat
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/BorrowRecordWithDetails'
  *       400:
- *         description: Data tidak valid, stok tidak cukup, atau bukan member
+ *         description: Data peminjaman tidak valid
  *       401:
  *         description: Tidak terautentikasi
  *       403:
- *         description: Bukan member atau tidak memiliki akses
+ *         description: Hanya member yang diperbolehkan
  *       404:
  *         description: Buku atau member tidak ditemukan
- *     description: |
- *       - Member ID diambil otomatis dari email user yang login
- *       - Stok buku akan otomatis berkurang
- *       - Status default: ACTIVE
  */
 router.post(
   "/",
@@ -245,39 +152,28 @@ router.post(
 
 /**
  * @swagger
- * /borrows/stats/all:
+ * /borrow/stats/all:
  *   get:
  *     summary: Mendapatkan statistik peminjaman (Admin only)
- *     tags: [Borrows]
+ *     tags: [Borrow]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Statistik peminjaman berhasil diambil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/BorrowStats'
+ *         description: Statistik berhasil diambil
  *       401:
  *         description: Tidak terautentikasi
  *       403:
- *         description: Bukan admin
+ *         description: Hanya admin yang diperbolehkan
  */
 router.get("/stats/all", authenticate, adminOnly, controller.getStats);
 
 /**
  * @swagger
- * /borrows/return:
+ * /borrow/return:
  *   post:
- *     summary: Mengembalikan buku (Member only)
- *     tags: [Borrows]
+ *     summary: Mengembalikan buku yang dipinjam
+ *     tags: [Borrow]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -285,33 +181,16 @@ router.get("/stats/all", authenticate, adminOnly, controller.getStats);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/ReturnRequest'
+ *             $ref: '#/components/schemas/ReturnBorrowRequest'
  *     responses:
  *       200:
  *         description: Buku berhasil dikembalikan
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/BorrowRecordWithDetails'
  *       400:
- *         description: Data tidak valid atau jumlah pengembalian melebihi peminjaman
+ *         description: Data pengembalian tidak valid
  *       401:
  *         description: Tidak terautentikasi
- *       403:
- *         description: Bukan member atau tidak memiliki akses
  *       404:
- *         description: Peminjaman atau item tidak ditemukan
- *     description: |
- *       - Stok buku akan otomatis bertambah
- *       - Jika semua buku dikembalikan, status berubah menjadi RETURNED
- *       - Jika sebagian, status tetap ACTIVE
+ *         description: Peminjaman tidak ditemukan
  */
 router.post(
   "/return",
@@ -322,88 +201,52 @@ router.post(
 
 /**
  * @swagger
- * /borrows:
+ * /borrow:
  *   get:
- *     summary: Mendapatkan daftar peminjaman dengan filter
- *     tags: [Borrows]
+ *     summary: Mendapatkan daftar peminjaman
+ *     tags: [Borrow]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: query
- *         name: memberEmail
- *         schema:
- *           type: string
- *         description: Filter berdasarkan email member
- *       - in: query
- *         name: bookTitle
- *         schema:
- *           type: string
- *         description: Filter berdasarkan judul buku
- *       - in: query
- *         name: status
- *         schema:
- *           type: string
- *           enum: [ACTIVE, RETURNED, OVERDUE]
- *         description: Filter berdasarkan status
  *       - in: query
  *         name: page
  *         schema:
  *           type: integer
  *           default: 1
- *         description: Nomor halaman
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
  *           default: 10
- *         description: Jumlah item per halaman
+ *       - in: query
+ *         name: memberEmail
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: bookTitle
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [ACTIVE, RETURNED, OVERDUE, CANCELLED]
  *       - in: query
  *         name: sortBy
  *         schema:
  *           type: string
- *           enum: [borrowDate, dueDate, status, createdAt]
- *         description: Kolom untuk sorting
+ *           enum: [borrowDate, dueDate, status]
  *       - in: query
  *         name: sortOrder
  *         schema:
  *           type: string
  *           enum: [asc, desc]
  *           default: desc
- *         description: |
-  Urutan sorting
-  Default: desc by borrowDate
  *     responses:
  *       200:
  *         description: Daftar peminjaman berhasil diambil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/BorrowRecordWithDetails'
- *                 pagination:
- *                   type: object
- *                   properties:
- *                     page:
- *                       type: integer
- *                     limit:
- *                       type: integer
- *                     total:
- *                       type: integer
- *                     totalPages:
- *                       type: integer
  *       401:
  *         description: Tidak terautentikasi
- *     description: |
- *       Admin: Melihat semua peminjaman
- *       Member: Hanya melihat peminjaman milik sendiri
  */
 router.get(
   "/",
@@ -414,10 +257,10 @@ router.get(
 
 /**
  * @swagger
- * /borrows/{id}:
+ * /borrow/{id}:
  *   get:
  *     summary: Mendapatkan detail peminjaman berdasarkan ID
- *     tags: [Borrows]
+ *     tags: [Borrow]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -426,30 +269,16 @@ router.get(
  *         required: true
  *         schema:
  *           type: string
- *         description: ID peminjaman
+ *           format: uuid
  *     responses:
  *       200:
  *         description: Detail peminjaman berhasil diambil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/BorrowRecordWithDetails'
+ *       400:
+ *         description: ID tidak valid
  *       401:
  *         description: Tidak terautentikasi
- *       403:
- *         description: Tidak memiliki akses
  *       404:
  *         description: Peminjaman tidak ditemukan
- *     description: |
- *       Admin: Bisa melihat semua detail peminjaman
- *       Member: Hanya bisa melihat detail peminjaman milik sendiri
  */
 router.get(
   "/:id",
@@ -460,10 +289,10 @@ router.get(
 
 /**
  * @swagger
- * /borrows/{id}:
+ * /borrow/{id}:
  *   put:
  *     summary: Mengupdate peminjaman (Admin only)
- *     tags: [Borrows]
+ *     tags: [Borrow]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -472,7 +301,7 @@ router.get(
  *         required: true
  *         schema:
  *           type: string
- *         description: ID peminjaman
+ *           format: uuid
  *     requestBody:
  *       required: true
  *       content:
@@ -480,32 +309,19 @@ router.get(
  *           schema:
  *             type: object
  *             properties:
- *               dueDate:
- *                 type: string
- *                 format: date
  *               status:
  *                 type: string
- *                 enum: [ACTIVE, RETURNED, OVERDUE]
+ *                 enum: [ACTIVE, RETURNED, OVERDUE, CANCELLED]
+ *               dueDate:
+ *                 type: string
+ *                 format: date-time
  *     responses:
  *       200:
  *         description: Peminjaman berhasil diupdate
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/BorrowRecordWithDetails'
- *       400:
- *         description: Data tidak valid
  *       401:
  *         description: Tidak terautentikasi
  *       403:
- *         description: Bukan admin
+ *         description: Hanya admin yang diperbolehkan
  *       404:
  *         description: Peminjaman tidak ditemukan
  */
@@ -519,10 +335,10 @@ router.put(
 
 /**
  * @swagger
- * /borrows/{id}:
+ * /borrow/{id}:
  *   delete:
- *     summary: Menghapus peminjaman (soft delete, Admin only)
- *     tags: [Borrows]
+ *     summary: Menghapus peminjaman (Admin only)
+ *     tags: [Borrow]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -531,25 +347,14 @@ router.put(
  *         required: true
  *         schema:
  *           type: string
- *         description: ID peminjaman
+ *           format: uuid
  *     responses:
  *       200:
  *         description: Peminjaman berhasil dihapus
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/BorrowRecord'
  *       401:
  *         description: Tidak terautentikasi
  *       403:
- *         description: Bukan admin
+ *         description: Hanya admin yang diperbolehkan
  *       404:
  *         description: Peminjaman tidak ditemukan
  */

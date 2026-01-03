@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { BorrowRecordRepository } from "../repository/borrowRecord.repository";
-import { BorrowService } from "../services/borrow.service";
-import { BorrowController } from "../controllers/borrow.controller";
-import { validate } from "../utils/validation";
-import { createBorrowValidation, returnBorrowValidation, getBorrowByIdValidation, searchBorrowsValidation, } from "../middleware/borrow.validation";
-import { authenticate, memberOnly, adminOnly, } from "../middleware/auth.validation";
+import { BorrowRecordRepository } from "../repository/borrowRecord.repository.js";
+import { BorrowService } from "../services/borrow.service.js";
+import { BorrowController } from "../controllers/borrow.controller.js";
+import { validate } from "../utils/validation.js";
+import { createBorrowValidation, returnBorrowValidation, getBorrowByIdValidation, searchBorrowsValidation, } from "../middleware/borrow.validation.js";
+import { authenticate, memberOnly, adminOnly, } from "../middleware/auth.validation.js";
 import prismaInstance from "../prisma";
 const router = Router();
 const borrowRecordRepo = new BorrowRecordRepository(prismaInstance);

@@ -23,7 +23,7 @@ const controller = new ProfileController(service);
  * @swagger
  * tags:
  *   name: Profiles
- *   description: Manajemen profile pengguna
+ *   description: Manajemen profil pengguna
  */
 
 /**
@@ -35,40 +35,6 @@ const controller = new ProfileController(service);
  *       properties:
  *         id:
  *           type: integer
- *           description: ID profile
- *         user_id:
- *           type: integer
- *           description: ID user pemilik profile
- *         name:
- *           type: string
- *           description: Nama lengkap
- *         gender:
- *           type: string
- *           enum: [MALE, FEMALE]
- *           nullable: true
- *         address:
- *           type: string
- *           nullable: true
- *         profile_picture_url:
- *           type: string
- *           nullable: true
- *         createdAt:
- *           type: string
- *           format: date-time
- *         updatedAt:
- *           type: string
- *           format: date-time
- *         deletedAt:
- *           type: string
- *           format: date-time
- *           nullable: true
- *     ProfileWithUser:
- *       type: object
- *       properties:
- *         id:
- *           type: integer
- *         user_id:
- *           type: integer
  *         name:
  *           type: string
  *         gender:
@@ -77,77 +43,24 @@ const controller = new ProfileController(service);
  *           type: string
  *         profile_picture_url:
  *           type: string
- *         user:
- *           type: object
- *           properties:
- *             id:
- *               type: integer
- *             username:
- *               type: string
- *             email:
- *               type: string
- *             role:
- *               type: string
+ *         user_id:
+ *           type: integer
  *         createdAt:
  *           type: string
  *           format: date-time
  *         updatedAt:
  *           type: string
  *           format: date-time
- *     ProfileInput:
- *       type: object
- *       required:
- *         - user_id
- *         - name
- *       properties:
- *         user_id:
- *           type: integer
- *           example: 1
- *         name:
- *           type: string
- *           example: "John Doe"
- *         gender:
- *           type: string
- *           enum: [MALE, FEMALE]
- *           example: "MALE"
- *         address:
- *           type: string
- *           example: "Jl. Contoh No. 123"
- *     ProfileUpdate:
- *       type: object
- *       properties:
- *         name:
- *           type: string
- *         gender:
- *           type: string
- *           enum: [MALE, FEMALE]
- *         address:
- *           type: string
- *     ProfileStats:
- *       type: object
- *       properties:
- *         overview:
- *           type: object
- *           properties:
- *             _count:
- *               type: object
- *         byGender:
- *           type: array
- *           items:
- *             type: object
- *             properties:
- *               gender:
- *                 type: string
- *               _count:
- *                 type: object
  */
 
 /**
  * @swagger
  * /profiles:
  *   post:
- *     summary: Membuat profile baru
+ *     summary: Membuat profil baru
  *     tags: [Profiles]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -160,42 +73,19 @@ const controller = new ProfileController(service);
  *             properties:
  *               user_id:
  *                 type: integer
- *                 example: 1
  *               name:
  *                 type: string
- *                 example: "John Doe"
  *               gender:
  *                 type: string
- *                 enum: [MALE, FEMALE]
- *                 example: "MALE"
+ *                 enum: [MALE, FEMALE, OTHER]
  *               address:
  *                 type: string
- *                 example: "Jl. Contoh No. 123"
  *               profile_picture:
  *                 type: string
  *                 format: binary
- *                 description: Foto profil (optional)
  *     responses:
  *       201:
- *         description: Profile berhasil dibuat
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/ProfileWithUser'
- *       400:
- *         description: Data tidak valid atau user sudah memiliki profile
- *       404:
- *         description: User tidak ditemukan
- *     description: |
- *       Public endpoint untuk membuat profile.
- *       Setiap user hanya bisa memiliki 1 profile.
+ *         description: Profil berhasil dibuat
  */
 router.post("/", upload.single('profile_picture'), validate(createProfileValidation), controller.create);
 
@@ -203,26 +93,13 @@ router.post("/", upload.single('profile_picture'), validate(createProfileValidat
  * @swagger
  * /profiles/stats/all:
  *   get:
- *     summary: Mendapatkan statistik profile (Auth required)
+ *     summary: Mendapatkan statistik profil
  *     tags: [Profiles]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Statistik profile berhasil diambil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/ProfileStats'
- *       401:
- *         description: Tidak terautentikasi
+ *         description: Statistik berhasil diambil
  */
 router.get("/stats/all", authenticate, controller.getStats);
 
@@ -230,7 +107,7 @@ router.get("/stats/all", authenticate, controller.getStats);
  * @swagger
  * /profiles:
  *   get:
- *     summary: Mendapatkan daftar profile (Auth required)
+ *     summary: Mendapatkan daftar profil
  *     tags: [Profiles]
  *     security:
  *       - bearerAuth: []
@@ -240,71 +117,38 @@ router.get("/stats/all", authenticate, controller.getStats);
  *         schema:
  *           type: integer
  *           default: 1
- *         description: Nomor halaman
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
  *           default: 10
- *         description: Jumlah item per halaman
  *       - in: query
  *         name: name
  *         schema:
  *           type: string
- *         description: Filter berdasarkan nama
  *       - in: query
  *         name: gender
  *         schema:
  *           type: string
- *           enum: [MALE, FEMALE]
- *         description: Filter berdasarkan gender
+ *           enum: [MALE, FEMALE, OTHER]
  *       - in: query
  *         name: address
  *         schema:
  *           type: string
- *         description: Filter berdasarkan alamat
  *       - in: query
  *         name: sortBy
  *         schema:
  *           type: string
  *           enum: [name, createdAt, gender]
- *         description: Kolom untuk sorting
  *       - in: query
  *         name: sortOrder
  *         schema:
  *           type: string
  *           enum: [asc, desc]
  *           default: desc
- *         description: | Urutan sorting Default: desc by createdAt
  *     responses:
  *       200:
- *         description: Daftar profile berhasil diambil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/ProfileWithUser'
- *                 pagination:
- *                   type: object
- *                   properties:
- *                     page:
- *                       type: integer
- *                     limit:
- *                       type: integer
- *                     total:
- *                       type: integer
- *                     totalPages:
- *                       type: integer
- *       401:
- *         description: Tidak terautentikasi
+ *         description: Daftar profil berhasil diambil
  */
 router.get("/", authenticate, controller.list);
 
@@ -312,7 +156,7 @@ router.get("/", authenticate, controller.list);
  * @swagger
  * /profiles/user/{userId}:
  *   get:
- *     summary: Mendapatkan profile berdasarkan user ID (Auth required)
+ *     summary: Mendapatkan profil berdasarkan User ID
  *     tags: [Profiles]
  *     security:
  *       - bearerAuth: []
@@ -321,26 +165,10 @@ router.get("/", authenticate, controller.list);
  *         name: userId
  *         required: true
  *         schema:
- *           type: string
- *         description: ID user pemilik profile
+ *           type: integer
  *     responses:
  *       200:
- *         description: Profile berhasil diambil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/ProfileWithUser'
- *       401:
- *         description: Tidak terautentikasi
- *       404:
- *         description: Profile tidak ditemukan
+ *         description: Profil berhasil diambil
  */
 router.get("/user/:userId", authenticate, validate(getProfileByUserIdValidation), controller.getByUserId);
 
@@ -348,7 +176,7 @@ router.get("/user/:userId", authenticate, validate(getProfileByUserIdValidation)
  * @swagger
  * /profiles/{id}:
  *   get:
- *     summary: Mendapatkan profile berdasarkan ID (Auth required)
+ *     summary: Mendapatkan profil berdasarkan ID
  *     tags: [Profiles]
  *     security:
  *       - bearerAuth: []
@@ -357,26 +185,10 @@ router.get("/user/:userId", authenticate, validate(getProfileByUserIdValidation)
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *         description: ID profile
+ *           type: integer
  *     responses:
  *       200:
- *         description: Profile berhasil diambil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/ProfileWithUser'
- *       401:
- *         description: Tidak terautentikasi
- *       404:
- *         description: Profile tidak ditemukan
+ *         description: Profil berhasil diambil
  */
 router.get("/:id", authenticate, validate(getProfileByIdValidation), controller.getById);
 
@@ -384,7 +196,7 @@ router.get("/:id", authenticate, validate(getProfileByIdValidation), controller.
  * @swagger
  * /profiles/{id}:
  *   put:
- *     summary: Mengupdate profile (Auth required)
+ *     summary: Mengupdate profil
  *     tags: [Profiles]
  *     security:
  *       - bearerAuth: []
@@ -393,8 +205,7 @@ router.get("/:id", authenticate, validate(getProfileByIdValidation), controller.
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *         description: ID profile
+ *           type: integer
  *     requestBody:
  *       required: true
  *       content:
@@ -404,38 +215,17 @@ router.get("/:id", authenticate, validate(getProfileByIdValidation), controller.
  *             properties:
  *               name:
  *                 type: string
- *                 example: "John Smith"
  *               gender:
  *                 type: string
- *                 enum: [MALE, FEMALE]
- *                 example: "MALE"
+ *                 enum: [MALE, FEMALE, OTHER]
  *               address:
  *                 type: string
- *                 example: "Jl. Baru No. 456"
  *               profile_picture:
  *                 type: string
  *                 format: binary
- *                 description: Foto profil baru (optional)
  *     responses:
  *       200:
- *         description: Profile berhasil diupdate
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/ProfileWithUser'
- *       400:
- *         description: Data tidak valid
- *       401:
- *         description: Tidak terautentikasi
- *       404:
- *         description: Profile tidak ditemukan
+ *         description: Profil berhasil diupdate
  */
 router.put("/:id", authenticate, upload.single('profile_picture'), validate(updateProfileValidation), controller.update);
 
@@ -443,7 +233,7 @@ router.put("/:id", authenticate, upload.single('profile_picture'), validate(upda
  * @swagger
  * /profiles/{id}:
  *   delete:
- *     summary: Menghapus profile (soft delete, Auth required)
+ *     summary: Menghapus profil
  *     tags: [Profiles]
  *     security:
  *       - bearerAuth: []
@@ -452,29 +242,10 @@ router.put("/:id", authenticate, upload.single('profile_picture'), validate(upda
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *         description: ID profile
+ *           type: integer
  *     responses:
  *       200:
- *         description: Profile berhasil dihapus
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/Profile'
- *       401:
- *         description: Tidak terautentikasi
- *       404:
- *         description: Profile tidak ditemukan
- *     description: |
- *       Soft delete: Menggunakan deletedAt timestamp.
- *       Tidak ada constraint khusus untuk delete profile.
+ *         description: Profil berhasil dihapus
  */
 router.delete("/:id", authenticate, validate(getProfileByIdValidation), controller.delete);
 

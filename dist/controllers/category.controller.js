@@ -1,4 +1,4 @@
-import { successResponse } from "../utils/response";
+import { successResponse } from "../utils/response.js";
 export class CategoryController {
     categoryService;
     constructor(categoryService) {
@@ -13,11 +13,17 @@ export class CategoryController {
             const sortBy = req.query.sortBy;
             const sortOrder = req.query.sortOrder || "desc";
             const result = await this.categoryService.list({
-                page, limit, search, sortBy, sortOrder,
+                page,
+                limit,
+                search,
+                sortBy,
+                sortOrder,
             });
             const pagination = {
-                page: result.currentPage, limit,
-                total: result.total, totalPages: result.totalPages,
+                page: result.currentPage,
+                limit,
+                total: result.total,
+                totalPages: result.totalPages,
             };
             successResponse(res, "Kategori berhasil diambil", result.categories, pagination);
         }

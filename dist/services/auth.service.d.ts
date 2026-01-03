@@ -1,4 +1,4 @@
-import type { IAuthRepository } from "../repository/auth.repository";
+import type { IAuthRepository } from "../repository/auth.repository.js";
 interface RegisterData {
     name: string;
     email: string;

@@ -2,6 +2,7 @@ import type { IAuthRepository } from "../repository/auth.repository";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import config from '../utils/env';
+import type { Prisma, PrismaClient } from "../generated/client"; // ← TAMBAH INI
 
 interface RegisterData {
   name: string;
@@ -21,6 +22,8 @@ interface LoginResponse {
     email: string;
     name: string;
     role: string;
+    profileId?: number;
+    memberId?: string;
   };
   token: string;
 }
@@ -30,6 +33,7 @@ interface RegisterResponse {
   email: string;
   name: string;
   role: string;
+  profileId?: number;
   memberId?: string;
 }
 
@@ -40,8 +44,8 @@ export interface IAuthService {
 
 export class AuthService implements IAuthService {
   constructor(
-    private authRepo: IAuthRepository
-    // HAPUS: private prisma: PrismaClient // Tidak digunakan
+    private authRepo: IAuthRepository,
+    private prisma: PrismaClient
   ) {}
 
   async register(data: RegisterData): Promise<RegisterResponse> {
@@ -60,42 +64,47 @@ export class AuthService implements IAuthService {
     // Hash password
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    // Cek apakah email sudah terdaftar sebagai member
-    const existingMember = await this.authRepo.findMemberByEmail(data.email);
-
-    let memberId: string | undefined;
-
-    // Jika member belum ada, buat member baru
-    if (!existingMember) {
-      const newMember = await this.authRepo.createMember({
-        name: data.name,
-        email: data.email,
-        // phone dan address bisa null
-      });
-      memberId = newMember.id;
-    } else {
-      memberId = existingMember.id;
-      // Update nama member jika berbeda
-      if (existingMember.name !== data.name && memberId) {
-        // PASTIKAN memberId tidak undefined sebelum digunakan
-        await this.authRepo.updateMember(memberId, { name: data.name });
-      }
-    }
-
-    // Buat user
-    const user = await this.authRepo.createUser({
+    // Buat user dengan profile dan member (jika role USER)
+    const userData: Prisma.UserCreateInput = {
       email: data.email,
-      username: data.name,
+      username: data.name.split(' ')[0] || data.name, // username dari nama
       password_hash: hashedPassword,
       role: role as any,
+      profile: {
+        create: {
+          name: data.name
+        }
+      }
+    };
+
+    // Jika role USER, buat member record juga
+    if (role === 'USER') {
+      userData.member = {
+        create: {
+          name: data.name,
+          email: data.email
+        }
+      };
+    }
+
+    // Buat user dengan transaction
+    const user = await this.prisma.$transaction(async (tx) => {
+      return await tx.user.create({
+        data: userData,
+        include: {
+          profile: true,
+          member: true
+        }
+      });
     });
 
     return {
       id: user.id,
       email: user.email,
-      name: user.username,
+      name: user.profile?.name || data.name,
       role: user.role,
-      memberId: memberId
+      profileId: user.profile?.id,
+      memberId: user.member?.id
     };
   }
 
@@ -111,6 +120,15 @@ export class AuthService implements IAuthService {
     if (!isValid) {
       throw new Error("Email atau password salah");
     }
+
+    // Get profile dan member
+    const userWithDetails = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      include: {
+        profile: true,
+        member: true
+      }
+    });
 
     // Generate JWT token
     const token = jwt.sign(
@@ -128,8 +146,10 @@ export class AuthService implements IAuthService {
       user: {
         id: user.id,
         email: user.email,
-        name: user.username,
-        role: user.role
+        name: userWithDetails?.profile?.name || user.username,
+        role: user.role,
+        profileId: userWithDetails?.profile?.id,
+        memberId: userWithDetails?.member?.id
       }, 
       token 
     };

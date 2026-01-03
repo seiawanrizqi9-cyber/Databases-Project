@@ -1,14 +1,16 @@
 model Profile {
   id                  Int      @id @default(autoincrement())
+  name                String   
   gender              String?
   address             String?
   profile_picture_url String?
-  name                String   
   user_id             Int      @unique
-  user                User     @relation(fields: [user_id], references: [id])
+  user                User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   deletedAt           DateTime?
 
   @@map("profiles")
+  @@index([user_id])
+  @@index([name])
 }

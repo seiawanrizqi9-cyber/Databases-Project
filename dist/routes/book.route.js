@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { BookRepository } from "../repository/book.repository";
-import { BookService } from "../services/book.service";
-import { BookController } from "../controllers/book.controller";
-import { createBookValidation, updateBookValidation, getBookByIdValidation, searchBooksValidation, validate } from "../middleware/book.validation";
-import { authenticate, adminOnly } from "../middleware/auth.validation";
-import { upload } from "../middleware/upload.validation";
+import { BookRepository } from "../repository/book.repository.js";
+import { BookService } from "../services/book.service.js";
+import { BookController } from "../controllers/book.controller.js";
+import { createBookValidation, updateBookValidation, getBookByIdValidation, searchBooksValidation, validate } from "../middleware/book.validation.js";
+import { authenticate, adminOnly } from "../middleware/auth.validation.js";
+import { upload } from "../middleware/upload.validation.js";
 import prismaInstance from "../prisma";
 const router = Router();
 const repo = new BookRepository(prismaInstance);
@@ -222,7 +222,7 @@ const controller = new BookController(service);
  *                     totalPages:
  *                       type: integer
  */
-router.get('/', controller.list);
+router.get("/", controller.list);
 /**
  * @swagger
  * /books/search:
@@ -320,7 +320,7 @@ router.get('/', controller.list);
  *                     totalPages:
  *                       type: integer
  */
-router.get('/search', validate(searchBooksValidation), controller.list);
+router.get("/search", validate(searchBooksValidation), controller.list);
 /**
  * @swagger
  * /books/{id}:
@@ -353,7 +353,7 @@ router.get('/search', validate(searchBooksValidation), controller.list);
  *       400:
  *         description: ID tidak valid
  */
-router.get('/:id', validate(getBookByIdValidation), controller.getById);
+router.get("/:id", validate(getBookByIdValidation), controller.getById);
 /**
  * @swagger
  * /books/stats/all:
@@ -375,7 +375,7 @@ router.get('/:id', validate(getBookByIdValidation), controller.getById);
  *                 data:
  *                   $ref: '#/components/schemas/BookStats'
  */
-router.get('/stats/all', controller.getStats);
+router.get("/stats/all", controller.getStats);
 /**
  * @swagger
  * /books:
@@ -440,7 +440,7 @@ router.get('/stats/all', controller.getStats);
  *       404:
  *         description: Author tidak ditemukan
  */
-router.post('/', authenticate, adminOnly, upload.single('image'), validate(createBookValidation), controller.create);
+router.post("/", authenticate, adminOnly, upload.single("image"), validate(createBookValidation), controller.create);
 /**
  * @swagger
  * /books/{id}:
@@ -505,7 +505,7 @@ router.post('/', authenticate, adminOnly, upload.single('image'), validate(creat
  *       404:
  *         description: Buku atau author tidak ditemukan
  */
-router.put('/:id', authenticate, adminOnly, upload.single('image'), validate(updateBookValidation), controller.update);
+router.put("/:id", authenticate, adminOnly, upload.single("image"), validate(updateBookValidation), controller.update);
 /**
  * @swagger
  * /books/{id}:
@@ -542,6 +542,6 @@ router.put('/:id', authenticate, adminOnly, upload.single('image'), validate(upd
  *       404:
  *         description: Buku tidak ditemukan
  */
-router.delete('/:id', authenticate, adminOnly, validate(getBookByIdValidation), controller.delete);
+router.delete("/:id", authenticate, adminOnly, validate(getBookByIdValidation), controller.delete);
 export default router;
 //# sourceMappingURL=book.route.js.map
